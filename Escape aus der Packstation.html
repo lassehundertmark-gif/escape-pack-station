@@ -1,0 +1,1334 @@
+<meta charset="utf-8">
+<title>Escape aus der Packstation</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bungee&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: nächtliche Lagerhalle; Aufträge als Kraftpapier-Etiketten auf Beton, Warnstreifen für gesperrte Tore */
+:root {
+  --night: #1a1f25; --concrete: #252c34; --concrete-2: #2f3842; --line: #3d4753;
+  --fg: #ece6db; --muted: #a3acb6;
+  --kraft: #dcc196; --kraft-2: #c9a774; --ink: #2b2016; --ink-soft: #5c4a35;
+  --hazard: #f2c230; --stamp: #c4422e; --ok: #3e9b5c; --warn: #e3a52a; --bad: #c4422e;
+  --f-display: 'Bungee', 'Arial Black', Impact, sans-serif;
+  --f-body: 'Atkinson Hyperlegible', 'Segoe UI', system-ui, sans-serif;
+  --f-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+button, .key, .opt, .chip, .lvl, .door { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.key, .opt, .chip, .lvl, .door, .btn { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+input { -webkit-appearance: none; appearance: none; border-radius: 6px; }
+body { background: var(--night); color: var(--fg); font-family: var(--f-body); font-size: 17px; line-height: 1.5;
+  background-image: radial-gradient(ellipse at 50% -10%, #2b3540 0%, transparent 60%), repeating-linear-gradient(90deg, transparent 0 119px, rgba(255,255,255,.025) 119px 120px); }
+.wrap { max-width: 860px; margin: 0 auto; padding-block: 18px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+button { font: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--hazard); outline-offset: 2px; }
+i { font-family: 'Times New Roman', Georgia, serif; font-size: 1.08em; }
+.mono { font-family: var(--f-mono); letter-spacing: .04em; }
+.hazard { height: 10px; background: repeating-linear-gradient(-45deg, var(--hazard) 0 14px, #1a1a1a 14px 28px); border-radius: 2px; }
+
+/* Kopfleiste */
+.bar { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.bar .who { font-family: var(--f-mono); font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.codezettel { display: flex; gap: 6px; align-items: center; background: var(--kraft); color: var(--ink); padding: 6px 10px; border-radius: 3px; transform: rotate(-1.2deg); box-shadow: 0 3px 0 rgba(0,0,0,.35); }
+.codezettel .lbl { font-family: var(--f-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; margin-right: 4px; }
+.codezettel .d { width: 26px; height: 30px; display: grid; place-items: center; border: 1.5px dashed var(--ink-soft); border-radius: 3px; font-family: var(--f-display); font-size: 17px; }
+.codezettel .d.on { border-style: solid; border-color: var(--ink); background: #efe0c4; }
+.codezettel .d small { font-family: var(--f-mono); font-size: 9px; display: block; line-height: 1; color: var(--ink-soft); }
+
+/* Start */
+.sign { font-family: var(--f-display); font-size: clamp(30px, 6.4vw, 54px); line-height: 1.02; color: var(--hazard); letter-spacing: .01em; }
+.sign span { color: var(--fg); display: block; font-size: .55em; }
+.lead { font-size: 18px; max-width: 60ch; color: var(--fg); }
+.panel { background: var(--concrete); border: 1px solid var(--line); border-radius: 10px; padding: 20px; }
+.start-grid { display: grid; gap: 18px; grid-template-columns: 1.6fr 1fr; align-items: start; margin-top: 18px; }
+@media (max-width: 860px) { .start-grid { grid-template-columns: 1fr; } }
+.start-grid .levels { grid-template-columns: 1fr; }
+@media (min-width: 560px) and (max-width: 860px) { .start-grid .levels { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+label.f { display: block; font-family: var(--f-mono); font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 6px; }
+input.txt { width: 100%; font: inherit; font-size: 20px; padding: 12px 14px; border-radius: 8px; border: 2px solid var(--line); background: #141920; color: var(--fg); }
+input.txt:focus { border-color: var(--hazard); outline: none; }
+.btn { display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 8px; padding: 13px 20px; font-weight: 700; font-size: 17px; background: var(--hazard); color: #1a1a1a; box-shadow: 0 4px 0 #a9831a; transition: transform .08s; }
+.btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #a9831a; }
+.btn.ghost { background: transparent; color: var(--fg); border: 2px solid var(--line); box-shadow: none; }
+.btn.dark { background: var(--ink); color: var(--kraft); box-shadow: 0 4px 0 #000; }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+details.teacher { margin-top: 18px; color: var(--muted); font-size: 15px; }
+details.teacher summary { cursor: pointer; font-family: var(--f-mono); font-size: 12px; text-transform: uppercase; letter-spacing: .1em; }
+details.teacher ol { padding-left: 20px; margin: 10px 0 0; }
+.rules { display: grid; gap: 8px; font-size: 15px; color: var(--muted); }
+.rules b { color: var(--fg); }
+
+/* Hallenplan */
+.plan { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+@media (max-width: 640px) { .plan { grid-template-columns: repeat(2, 1fr); } }
+.door { position: relative; min-height: 168px; border-radius: 8px; border: 2px solid var(--line); background: var(--concrete); color: var(--fg); text-align: left; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
+.door::before { content: ""; position: absolute; inset: 44px 10px 10px; background: repeating-linear-gradient(0deg, var(--concrete-2) 0 9px, #222930 9px 11px); border-radius: 4px; opacity: .9; }
+.door > * { position: relative; }
+.door .hall { font-family: var(--f-display); font-size: 30px; line-height: 1; color: var(--hazard); }
+.door .nm { font-weight: 700; font-size: 15px; }
+.door .tp { font-size: 13px; color: var(--muted); }
+.door.locked { cursor: not-allowed; }
+.door.locked .hall { color: var(--muted); }
+.door.locked::after { content: ""; position: absolute; left: -10%; right: -10%; top: 58%; height: 16px; background: repeating-linear-gradient(-45deg, var(--hazard) 0 12px, #1a1a1a 12px 24px); transform: rotate(-8deg); opacity: .85; }
+.door.open { border-color: var(--hazard); box-shadow: 0 0 0 4px rgba(242,194,48,.12); }
+@media (hover: hover) { .door.open:hover { transform: translateY(-2px); } .opt:hover { background: #fff6e6; } }
+.door.done { border-color: var(--ok); }
+.door .stamp { position: absolute; right: 10px; bottom: 14px; font-family: var(--f-display); font-size: 15px; color: var(--ok); border: 2.5px solid var(--ok); padding: 2px 8px; transform: rotate(-9deg); border-radius: 4px; background: rgba(26,31,37,.85); }
+.door.exit .hall { color: var(--fg); }
+.door .lock { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+
+/* Halle */
+.hallhead { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: end; justify-content: space-between; margin-bottom: 10px; }
+.hallhead .h { font-family: var(--f-display); font-size: clamp(22px, 4.6vw, 34px); color: var(--hazard); line-height: 1.05; }
+.hallhead .h small { display: block; font-family: var(--f-mono); font-size: 12px; color: var(--muted); letter-spacing: .1em; }
+.pips { display: flex; gap: 6px; }
+.pip { width: 34px; height: 10px; border-radius: 2px; background: var(--line); }
+.pip.cur { background: var(--hazard); }
+.pip.p2 { background: var(--ok); } .pip.p1 { background: var(--warn); } .pip.p0 { background: var(--bad); }
+.intro { color: var(--muted); margin: 0 0 14px; max-width: 65ch; }
+
+.label { background: var(--kraft); color: var(--ink); border-radius: 6px; padding: 0; box-shadow: 0 10px 24px rgba(0,0,0,.35), 0 2px 0 var(--kraft-2); position: relative; overflow: hidden; }
+.label .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 18px; border-bottom: 2px dashed var(--kraft-2); }
+.label .top .mono { font-size: 13px; font-weight: 600; }
+.barcode { height: 22px; width: 120px; background: repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 4px, var(--ink) 4px 5px, transparent 5px 8px, var(--ink) 8px 11px, transparent 11px 12px); opacity: .8; }
+.label .body { padding: 18px 18px 20px; display: grid; gap: 14px; }
+.prompt { font-size: 20px; line-height: 1.5; }
+.visual { display: flex; justify-content: center; }
+.visual svg { max-width: 100%; height: auto; }
+.answer { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.answer input { flex: 1 1 220px; min-width: 0; font: inherit; font-size: 22px; padding: 10px 14px; border-radius: 6px; border: 2px solid var(--ink-soft); background: #f6ecda; color: var(--ink); font-variant-numeric: tabular-nums; }
+.answer input:focus { outline: none; border-color: var(--ink); box-shadow: 0 0 0 3px rgba(43,32,22,.2); }
+.answer input.right { border-color: var(--ok); background: #e5f1e3; }
+.answer input.wrong { border-color: var(--bad); }
+.answer .pre { font-size: 20px; font-weight: 700; min-width: 3.2em; }
+.tbl { border-collapse: collapse; font-size: 19px; }
+.tbl th, .tbl td { border: 2px solid var(--ink-soft); padding: 6px 10px; text-align: center; }
+.tbl th { background: #e8d4b0; }
+.tbl input { width: 84px; font: inherit; font-size: 19px; padding: 6px; border: 1.5px solid var(--ink-soft); border-radius: 4px; background: #f6ecda; color: var(--ink); text-align: center; }
+.opts { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 520px) { .opts { grid-template-columns: 1fr; } }
+.opt { background: #f6ecda; color: var(--ink); border: 2px solid var(--ink-soft); border-radius: 8px; padding: 14px; font-size: 20px; text-align: center; }
+.opt.sel { background: var(--ink); color: var(--kraft); border-color: var(--ink); }
+.opt.bad { border-color: var(--bad); background: #f3d6cf; color: #7a2a1d; text-decoration: line-through; }
+.opt.good { border-color: var(--ok); background: #d9ecd6; }
+.chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.chip { min-width: 74px; padding: 14px 12px; border-radius: 6px; border: 2px solid var(--ink-soft); background: #e9d3aa; color: var(--ink); font-size: 21px; box-shadow: 0 3px 0 var(--kraft-2); }
+.chip.sel { background: var(--ink); color: var(--kraft); }
+.keypad { display: grid; gap: 6px; }
+.key { min-width: 44px; height: 44px; padding: 0 10px; border-radius: 6px; border: 1.5px solid var(--ink-soft); background: #efe0c4; color: var(--ink); font-size: 19px; }
+.key:active { background: #e2cda6; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.msg { border-radius: 6px; padding: 10px 14px; font-size: 16px; }
+.msg.ok { background: #d9ecd6; color: #1f4d2c; border-left: 6px solid var(--ok); }
+.msg.no { background: #f3d6cf; color: #6e2416; border-left: 6px solid var(--bad); }
+.msg.info { background: #efe0c4; color: var(--ink); border-left: 6px solid var(--ink-soft); }
+.msg.hint { background: #fbf1c9; color: #4a3a07; border-left: 6px solid var(--hazard); }
+.msg b { display: block; }
+.tries { font-family: var(--f-mono); font-size: 12px; color: var(--ink-soft); }
+
+/* Tor offen / Ausgang */
+.reveal { text-align: center; display: grid; gap: 14px; justify-items: center; padding: 28px 18px; }
+.bigdigit { font-family: var(--f-display); font-size: 84px; line-height: 1; color: var(--ink); background: var(--kraft); width: 120px; height: 130px; display: grid; place-items: center; border-radius: 8px; box-shadow: 0 8px 0 var(--kraft-2); animation: drop .5s cubic-bezier(.2,1.4,.4,1); }
+@keyframes drop { from { transform: translateY(-30px) rotate(-6deg); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .bigdigit { animation: none; } .door.open:hover { transform: none; } }
+.vault { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.vault input { width: 56px; height: 70px; font-family: var(--f-display); font-size: 34px; text-align: center; border-radius: 8px; border: 3px solid var(--line); background: #11161c; color: var(--hazard); }
+.vault input:focus { border-color: var(--hazard); outline: none; }
+.vault .cap { display: block; font-family: var(--f-mono); font-size: 11px; color: var(--muted); text-align: center; margin-top: 4px; }
+
+/* Auswertung */
+.report-head { display: grid; gap: 6px; margin-bottom: 18px; }
+.cards { display: grid; gap: 12px; }
+.acard { display: grid; grid-template-columns: 70px 1fr; gap: 14px; background: var(--concrete); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+.lamp { display: grid; gap: 5px; align-content: start; justify-items: center; background: #11161c; border-radius: 8px; padding: 8px 0; }
+.lamp i { all: unset; width: 18px; height: 18px; border-radius: 50%; background: #2a3038; }
+.lamp.rot i:nth-child(1) { background: var(--bad); box-shadow: 0 0 12px var(--bad); }
+.lamp.gelb i:nth-child(2) { background: var(--hazard); box-shadow: 0 0 12px var(--hazard); }
+.lamp.gruen i:nth-child(3) { background: var(--ok); box-shadow: 0 0 12px var(--ok); }
+.acard h3 { font-size: 18px; }
+.acard .meta { font-family: var(--f-mono); font-size: 12px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+.acard p { margin: 6px 0 0; }
+.acard ul { margin: 6px 0 0; padding-left: 18px; color: var(--muted); }
+.acard .todo { display: inline-block; margin-top: 8px; font-weight: 700; }
+.laufzettel { margin-top: 18px; background: var(--kraft); color: var(--ink); border-radius: 6px; padding: 16px 18px; display: grid; gap: 8px; }
+.laufzettel .code { font-family: var(--f-mono); font-size: 18px; font-weight: 600; }
+.confirm { display: inline-flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.muted { color: var(--muted); }
+.levels { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 640px) { .levels { grid-template-columns: 1fr; } }
+.lvl { text-align: left; border: 2px solid var(--line); background: #141920; color: var(--fg); border-radius: 8px; padding: 12px; display: grid; gap: 4px; }
+.lvl .st { font-family: var(--f-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.lvl .nm { font-family: var(--f-display); font-size: 17px; color: var(--hazard); }
+.lvl .ds { font-size: 14px; color: var(--muted); }
+.lvl .boxes { display: flex; gap: 3px; } .lvl .boxes span { width: 12px; height: 12px; border: 1.5px solid var(--kraft-2); border-radius: 2px; } .lvl .boxes span.on { background: var(--kraft); }
+.lvl[aria-pressed="true"] { border-color: var(--hazard); background: #2a2b20; box-shadow: 0 0 0 3px rgba(242,194,48,.18); }
+.lvlchip { font-family: var(--f-mono); font-size: 12px; letter-spacing: .06em; color: var(--hazard); border: 1.5px solid var(--hazard); border-radius: 4px; padding: 3px 8px; text-transform: uppercase; }
+.reveal .levels { width: 100%; max-width: 640px; }
+.suggest { font-size: 15px; max-width: 52ch; }
+.padwrap { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+.digits { display: grid; grid-template-columns: repeat(3, 48px); gap: 6px; }
+.digits .key { min-width: 0; width: 48px; }
+.syms { display: flex; flex-wrap: wrap; gap: 6px; max-width: 290px; }
+.key.wide { min-width: 70px; }
+.devkbd { background: none; border: 0; color: var(--ink-soft); font-size: 13px; text-decoration: underline; padding: 4px 0; }
+.space { height: 14px; }
+</style>
+
+<div class="wrap" id="app"></div>
+
+<script>
+/* ===== Engine: Parser, Zufall, Aufgaben ===== */
+(function (G) {
+  'use strict';
+
+  // ---------- Zufall ----------
+  function rng(seed) {
+    let a = seed >>> 0;
+    const r = () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+    r.int = (lo, hi) => lo + Math.floor(r() * (hi - lo + 1));
+    r.pick = arr => arr[Math.floor(r() * arr.length)];
+    r.shuffle = arr => { const a2 = arr.slice(); for (let i = a2.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a2[i], a2[j]] = [a2[j], a2[i]]; } return a2; };
+    return r;
+  }
+
+  // ---------- Parser ----------
+  function normalize(s) {
+    return String(s).toLowerCase()
+      .replace(/[−–—]/g, '-')
+      .replace(/[·⋅×*]/g, '*')
+      .replace(/[:÷]/g, '/')
+      .replace(/²/g, '^2').replace(/³/g, '^3')
+      .replace(/,/g, '.')
+      .replace(/\s+/g, '');
+  }
+  function tokenize(src) {
+    const t = []; let i = 0;
+    while (i < src.length) {
+      const c = src[i];
+      if (/[0-9.]/.test(c)) { let j = i; while (j < src.length && /[0-9.]/.test(src[j])) j++; const v = src.slice(i, j); if ((v.match(/\./g) || []).length > 1 || v === '.') throw new Error('zahl'); t.push({ k: 'n', v: parseFloat(v) }); i = j; continue; }
+      if (/[a-z]/.test(c)) { t.push({ k: 'v', v: c }); i++; continue; }
+      if ('+-*/^()'.includes(c)) { t.push({ k: c }); i++; continue; }
+      throw new Error('zeichen');
+    }
+    // implizites Mal
+    const out = [];
+    for (let k = 0; k < t.length; k++) {
+      const a = t[k], b = t[k + 1];
+      out.push(a);
+      if (b && (a.k === 'n' || a.k === 'v' || a.k === ')') && (b.k === 'v' || b.k === '(' || (b.k === 'n' && a.k !== 'n'))) out.push({ k: '*' });
+    }
+    return out;
+  }
+  function parse(str) {
+    const toks = tokenize(normalize(str)); let p = 0;
+    const peek = () => toks[p], eat = k => { if (!toks[p] || toks[p].k !== k) throw new Error('syntax'); return toks[p++]; };
+    function expr() { let n = term(); while (peek() && (peek().k === '+' || peek().k === '-')) { const op = toks[p++].k; const r = term(); n = { op, a: n, b: r }; } return n; }
+    function term() { let n = factor(); while (peek() && (peek().k === '*' || peek().k === '/')) { const op = toks[p++].k; const r = factor(); n = { op, a: n, b: r }; } return n; }
+    function factor() { if (peek() && peek().k === '-') { p++; return { op: 'neg', a: factor() }; } if (peek() && peek().k === '+') { p++; return factor(); } return power(); }
+    function power() { const b = primary(); if (peek() && peek().k === '^') { p++; const e = factor(); return { op: '^', a: b, b: e }; } return b; }
+    function primary() {
+      const t = peek(); if (!t) throw new Error('ende');
+      if (t.k === 'n') { p++; return { num: t.v }; }
+      if (t.k === 'v') { p++; return { v: t.v }; }
+      if (t.k === '(') { p++; const e = expr(); eat(')'); return e; }
+      throw new Error('syntax');
+    }
+    if (!toks.length) throw new Error('leer');
+    const tree = expr(); if (p !== toks.length) throw new Error('syntax');
+    return tree;
+  }
+  function evalT(n, env) {
+    if ('num' in n) return n.num;
+    if ('v' in n) { if (!(n.v in env)) return NaN; return env[n.v]; }
+    switch (n.op) {
+      case 'neg': return -evalT(n.a, env);
+      case '+': return evalT(n.a, env) + evalT(n.b, env);
+      case '-': return evalT(n.a, env) - evalT(n.b, env);
+      case '*': return evalT(n.a, env) * evalT(n.b, env);
+      case '/': return evalT(n.a, env) / evalT(n.b, env);
+      case '^': return Math.pow(evalT(n.a, env), evalT(n.b, env));
+    }
+    return NaN;
+  }
+  function varsOf(n, s = new Set()) { if (!n) return s; if ('v' in n) s.add(n.v); if (n.a) varsOf(n.a, s); if (n.b) varsOf(n.b, s); return s; }
+  const PTS = [1.7, -2.3, 3.1, 0.6, -1.45, 2.55];
+  function equiv(t1, t2) {
+    const vs = [...new Set([...varsOf(t1), ...varsOf(t2)])];
+    for (let i = 0; i < PTS.length; i++) {
+      const env = {}; vs.forEach((v, j) => env[v] = PTS[(i + j * 2) % PTS.length] + j * 0.37);
+      const a = evalT(t1, env), b = evalT(t2, env);
+      if (!isFinite(a) || !isFinite(b)) return false;
+      if (Math.abs(a - b) > 1e-7 * Math.max(1, Math.abs(a), Math.abs(b))) return false;
+    }
+    return true;
+  }
+  // Anzahl der Summanden auf oberster Ebene
+  function termCount(raw) {
+    const s = normalize(raw); let depth = 0, count = 0, inTerm = false;
+    for (let i = 0; i < s.length; i++) {
+      const c = s[i];
+      if (c === '(') depth++;
+      if (c === ')') depth--;
+      if ((c === '+' || c === '-') && depth === 0 && i > 0 && !'^*/'.includes(s[i - 1])) { inTerm = false; continue; }
+      if (c === '+' || c === '-') continue;
+      if (!inTerm) { count++; inTerm = true; }
+    }
+    return count;
+  }
+  function isSimplified(raw, maxTerms) {
+    const s = normalize(raw);
+    if (/[*/()]/.test(s)) return false;
+    if (/[a-z]\d/.test(s)) return false; // z. B. x4y
+    if (/([a-z])[a-z]*\1/.test(s.replace(/\^\d+/g, ''))) return false; // xx, aba
+    if (/\d\^/.test(s)) return false; // Zahl hoch ...
+    return termCount(raw) <= maxTerms;
+  }
+  function numVal(raw) {
+    let s = normalize(raw).replace(/^[a-z]=/, '');
+    const t = parse(s); if (varsOf(t).size) throw new Error('var');
+    return evalT(t, {});
+  }
+
+  // ---------- Darstellung ----------
+  function fm(s) { // Ausdruck schön darstellen (HTML)
+    return String(s)
+      .replace(/=/g, ' = ')
+      .replace(/\*/g, ' · ').replace(/\//g, ' : ')
+      .replace(/\^2/g, '²').replace(/\^3/g, '³').replace(/\^4/g, '⁴').replace(/\^6/g, '⁶')
+      .replace(/\+/g, ' + ').replace(/(^|[(=]\s*)-/g, '$1\u2212').replace(/-/g, ' \u2212 ')
+      .replace(/\s+/g, ' ').trim()
+      .replace(/([a-z])/g, '<i>$1</i>');
+  }
+  const sgn = n => (n >= 0 ? '+' : '-') + Math.abs(n);
+  const par = n => n < 0 ? `(${n})` : `${n}`;
+  const dec = n => String(n).replace('.', ',');
+
+  // ---------- Fehlerbilder ----------
+  const TAGS = {
+    A_reihenfolge: 'Bei „vermindert um“ wird die Zahl am Ende abgezogen. Erst das Vielfache bilden, dann subtrahieren.',
+    A_klammer: 'Du hast eine Klammer gesetzt, die im Text nicht vorkommt. Überlege zuerst mit einer echten Zahl, wie du rechnen würdest.',
+    A_klammerfehlt: 'Hier fehlt eine Klammer. Wenn eine Summe oder Differenz als Ganzes vervielfacht wird, muss sie in Klammern stehen.',
+    A_vertauscht: 'Du hast Anzahl und Inhalt vertauscht. Was wird vervielfacht, was kommt einmal dazu?',
+    A_rechenart: 'Achte auf die Rechenart: Summe heißt Plus, Differenz heißt Minus, Produkt heißt Mal, Quotient heißt Geteilt.',
+    A_zweivariablen: 'Hier gibt es zwei verschiedene unbekannte Größen. Dafür brauchst du zwei verschiedene Variablen, also zwei verschiedene Buchstaben.',
+    A_flaeche: 'Länge mal Breite ist der Flächeninhalt. Für den Umfang addierst du alle vier Seiten.',
+    B_vorzeichen: 'Beim Einsetzen negativer Zahlen ging ein Vorzeichen verloren. Setze negative Zahlen immer in Klammern.',
+    B_quadrat: 'Du hast −k² statt (−k)² gerechnet. Das Quadrat einer negativen Zahl ist positiv: (−3)² = 9.',
+    B_minusquadrat: '−b² bedeutet −(b²). Für b = −3 gilt: −(−3)² = −9. Erst quadrieren, dann das Minus davor beachten.',
+    B_klammerquadrat: '(x − a)² ist nicht dasselbe wie x² − a². Rechne zuerst die Klammer aus und quadriere dann das Ergebnis.',
+    C_hochzahl: 'Glieder mit verschiedenen Exponenten (zum Beispiel x und x²) sind nicht gleichartig. Gleichartige Glieder haben dieselben Variablen mit denselben Exponenten.',
+    C_verschieden: 'Glieder mit verschiedenen Variablen (zum Beispiel a und b) sind nicht gleichartig und lassen sich nicht zusammenfassen.',
+    C_zahl: 'Eine Zahl ohne Variable und ein Glied mit Variable sind nicht gleichartig. 4y − 4 bleibt so stehen.',
+    C_potenz: 'Beim Addieren gleicher Glieder werden die Koeffizienten addiert: a + a + a = 3a. Die Potenz a³ entsteht nur beim Multiplizieren: a · a · a.',
+    C_vorzeichen: 'Beim Zusammenfassen ging ein Rechenzeichen verloren. Das Zeichen gehört immer zum Glied dahinter.',
+    D_addiert: 'Beim Multiplizieren hast du die Zahlen addiert. Koeffizienten werden multipliziert: 3x · 4y = 12xy.',
+    D_vorzeichen: 'Achte beim Multiplizieren auf die Vorzeichen: Minus mal Plus ergibt Minus, Minus mal Minus ergibt Plus.',
+    D_potenz: 'Beim Multiplizieren gleicher Variablen werden die Exponenten addiert: x · x = x², x² · x = x³.',
+    D_klammerpotenz: 'Bei (3x)³ wird alles in der Klammer hoch 3 genommen: (3x)³ = 3x · 3x · 3x = 27x³.',
+    D_umfang: 'Für den Umfang brauchst du alle vier Seiten: u = 2 · Länge + 2 · Breite.',
+    D_oberflaeche: 'Ein Quader hat sechs Flächen, jede kommt doppelt vor. Deshalb steht in der Formel für die Oberfläche der Faktor 2.',
+    E_umformung: 'Bei einer Äquivalenzumformung machst du auf beiden Seiten genau dasselbe und änderst nur die betroffenen Glieder.',
+    E_rueckwaerts: 'Beim Lösen hast du einen Schritt in die falsche Richtung gemacht. Prüfe deine Lösung immer mit der Probe.',
+    E_teilen: 'Beim Teilen durch eine negative Zahl ändert sich das Vorzeichen: −4x = 12, also x = 12 : (−4) = −3.',
+  };
+
+  // ---------- Bereiche und Stufen ----------
+  const AREAS = [
+    { id: 'A', hall: 'Etikettierung', topic: 'Terme aufstellen', station: 'A', intro: 'Hier bekommt jedes Paket ein Etikett. Auf den Etiketten stehen Rechenanweisungen in Worten. Übersetze sie in Terme.' },
+    { id: 'B', hall: 'Paketwaage', topic: 'Einsetzen in Terme', station: 'B', intro: 'Die Waage rechnet mit Termen. Setze Zahlen in Terme ein, und wo nötig stelle den Term vorher selbst auf.' },
+    { id: 'C', hall: 'Sortieranlage', topic: 'Gleichartige Glieder zusammenfassen', station: 'C', intro: 'Auf dem Förderband liegen Glieder durcheinander. Sortiere, was zusammengehört, und fasse zusammen.' },
+    { id: 'D', hall: 'Packpresse', topic: 'Produkte vereinfachen', station: 'D', intro: 'Die Presse drückt Produkte zusammen. Vereinfache so weit wie möglich.' },
+    { id: 'E', hall: 'Tresorraum', topic: 'Gleichungen lösen', station: 'E', intro: 'Im Tresorraum ist jedes Schloss eine Gleichung. Finde die Zahl, die passt.' },
+  ];
+  const LEVELS = {
+    1: { name: 'Aushilfe', short: 'Stufe 1', desc: 'Ich fange mit einfachen Aufträgen an und arbeite mich hoch.' },
+    2: { name: 'Lagerprofi', short: 'Stufe 2', desc: 'Ich kann das meiste aus Klasse 7 und will es zeigen.' },
+    3: { name: 'Schichtleitung', short: 'Stufe 3', desc: 'Ich bin sicher und will knifflige Aufträge.' },
+  };
+  // Ampel je Stufe: Punkte (0–8) -> Ampel
+  function ampel(level, pts) {
+    if (level === 1) return pts >= 7 ? 'gelb' : 'rot';
+    if (level === 3) return pts >= 5 ? 'gruen' : pts >= 2 ? 'gelb' : 'rot';
+    return pts >= 7 ? 'gruen' : pts >= 4 ? 'gelb' : 'rot';
+  }
+  const MULT = { 2: 'Doppelte', 3: 'Dreifache', 4: 'Vierfache', 5: 'Fünffache', 6: 'Sechsfache', 7: 'Siebenfache' };
+  const C1_HINT = 'Gleichartige Glieder haben dieselben Variablen mit denselben Exponenten. Nur der Koeffizient, also der Zahlfaktor davor, darf verschieden sein.';
+  const m = n => String(n).replace('-', '−');
+
+  function makeTasks(seed) {
+    const T = [];
+    const add = (lvl, o) => {
+      o.level = lvl; o.id = o.id + (lvl ? '-' + lvl : '');
+      // Fehlerbilder entfernen, die zufällig mit der richtigen Lösung zusammenfallen
+      if (o.type === 'num' && o.traps) o.traps = o.traps.filter(t => Math.abs(t.v - o.expect) > 1e-9);
+      if (o.type === 'term' && o.traps) o.traps = o.traps.filter(t => !(o.free ? equivFree : equiv)(parse(t.e), parse(o.expect)));
+      if (o.type === 'pair') o.traps = o.traps.map((tr, i) => tr.filter(t => !equiv(parse(t.e), parse(o.expect[i]))));
+      T.push(o);
+    };
+
+    // ================= STUFE 1 =================
+    { const R = rng(seed + 101), L = 1;
+      { const k = R.int(3, 12);
+        add(L, { id: 'A1', area: 'A', type: 'term', free: true, prompt: `Auf dem Etikett steht: „Die Summe aus einer Zahl und ${k}.“<br>Stelle einen Term auf. Für die Variable darfst du einen beliebigen Buchstaben wählen.`,
+          expect: `x+${k}`, traps: [{ e: `${k}x`, tag: 'A_rechenart' }, { e: `x-${k}`, tag: 'A_rechenart' }],
+          hint: 'Wähle einen Buchstaben für die unbekannte Zahl, zum Beispiel x. Summe bedeutet: Die beiden Teile werden addiert.', solution: `zum Beispiel ${fm(`x+${k}`)}` }); }
+      { const p = R.int(2, 5);
+        add(L, { id: 'A2', area: 'A', type: 'term', free: true, prompt: `Ein Klebeband kostet ${p} Euro. Stelle einen Term für den Preis von mehreren Klebebändern auf. Für die Variable darfst du einen beliebigen Buchstaben wählen.`,
+          expect: `${p}x`, traps: [{ e: `x+${p}`, tag: 'A_rechenart' }, { e: `x-${p}`, tag: 'A_rechenart' }, { e: `x/${p}`, tag: 'A_rechenart' }],
+          hint: `Wähle einen Buchstaben für die Anzahl der Klebebänder. Für 3 Klebebänder rechnest du 3 · ${p}.`, solution: `zum Beispiel ${fm(`${p}x`)}, wenn x die Anzahl der Klebebänder ist` }); }
+      { const a = R.int(2, 5), k = R.pick([2, 3, 4, 5, 6, 7, 8, 9].filter(v => v !== a));
+        add(L, { id: 'A3', area: 'A', type: 'term', free: true, prompt: `Auf dem Etikett steht: „Das ${MULT[a]} einer Zahl, vermehrt um ${k}.“<br>Stelle einen Term auf. Für die Variable darfst du einen beliebigen Buchstaben wählen.`,
+          expect: `${a}x+${k}`, traps: [{ e: `${a}(x+${k})`, tag: 'A_klammer' }, { e: `${k}x+${a}`, tag: 'A_vertauscht' }],
+          hint: `Wähle einen Buchstaben für die Zahl, zum Beispiel x. Das ${MULT[a]} davon ist ${a}x, dann kommt ${k} dazu.`, solution: `zum Beispiel ${fm(`${a}x+${k}`)}` }); }
+      { const d = R.int(2, 4);
+        add(L, { id: 'A4', area: 'A', type: 'term', free: true, prompt: `Im Lager werden Kartons gestapelt. Figur 1 hat ${d} Kartons, Figur 2 hat ${2 * d}, Figur 3 hat ${3 * d}.<br>Stelle einen Term auf, mit dem man die Anzahl der Kartons für jede beliebige Figur berechnen kann. Für die Variable darfst du einen beliebigen Buchstaben wählen.`,
+          visual: { kind: 'stack', d, s: 0 }, expect: `${d}n`, traps: [{ e: `n+${d}`, tag: 'A_rechenart' }],
+          hint: `Wähle einen Buchstaben für die Nummer der Figur, zum Beispiel n. In jeder Reihe liegen ${d} Kartons, Figur 3 hat 3 Reihen.`, solution: `zum Beispiel ${fm(`${d}n`)}, wenn n die Nummer der Figur ist` }); }
+      { const a = R.int(2, 6), b = R.int(1, 9), k = R.int(2, 6), v = a * k + b;
+        add(L, { id: 'B1', area: 'B', type: 'num', prompt: `Das Display zeigt den Term ${fm(`${a}x+${b}`)}.<br>Berechne den Wert für <i>x</i> = ${k}.`, expect: v,
+          traps: [{ v: a + k + b, tag: 'A_rechenart' }], hint: `${a}x bedeutet ${a} · x. Rechne ${a} · ${k} + ${b}.`, solution: `${a} · ${k} + ${b} = ${v}` }); }
+      { const c = R.int(1, 9), k = R.int(2, 6), v = k * k + c;
+        add(L, { id: 'B2', area: 'B', type: 'num', prompt: `Die Waage rechnet mit ${fm(`x^2+${c}`)}.<br>Berechne den Wert für <i>x</i> = ${k}.`, expect: v,
+          traps: [{ v: 2 * k + c, tag: 'D_potenz' }].filter(t => t.v !== v), hint: `x² bedeutet x · x, also ${k} · ${k}.`, solution: `${k}² + ${c} = ${k * k} + ${c} = ${v}` }); }
+      { const mm = R.int(2, 6), q = R.int(1, 9), xs = [0, 1, 2];
+        add(L, { id: 'B3', area: 'B', type: 'table', prompt: `Fülle die Wertetabelle für den Term ${fm(`${mm}x+${q}`)} aus.`, xs, expect: xs.map(x => mm * x + q),
+          hint: `Für x = 0 bleibt nur ${q} übrig. Für x = 1 rechnest du ${mm} · 1 + ${q}.`, solution: xs.map(x => `x = ${x}: ${mm * x + q}`).join('; ') }); }
+      { const a = R.int(2, 5), b = R.int(4, 12), v = -a + b;
+        add(L, { id: 'B4', area: 'B', type: 'num', prompt: `Berechne den Wert von ${fm(`${a}x+${b}`)} für <i>x</i> = −1.`, expect: v,
+          traps: [{ v: a + b, tag: 'B_vorzeichen' }], hint: `Setze −1 in Klammern ein: ${a} · (−1) + ${b}.`, solution: `${a} · (−1) + ${b} = ${m(v)}` }); }
+      { const chips = R.shuffle([{ t: '2x', ok: true }, { t: 'x', ok: true }, { t: '7x', ok: true }, { t: 'x^2', tag: 'C_hochzahl' }, { t: '5', tag: 'C_zahl' }, { t: '3y', tag: 'C_verschieden' }]);
+        add(L, { id: 'C1', area: 'C', type: 'multi', prompt: `Welche Glieder sind <b>gleichartig</b> zu ${fm('4x')}? Tippe alle passenden Glieder an.`,
+          options: chips.map(c => fm(c.t)), correctSet: chips.map((c, i) => c.ok ? i : -1).filter(i => i >= 0), optTags: chips.map(c => c.tag || null),
+          hint: C1_HINT, solution: 'Gleichartig zu 4x sind 2x, x und 7x: gleiche Variable x mit Exponent 1. Nicht gleichartig: x² (anderer Exponent), 3y (andere Variable), 5 (keine Variable).' }); }
+      { const a = R.int(2, 8), c = R.int(2, 8);
+        add(L, { id: 'C2', area: 'C', type: 'term', simplify: 1, prompt: `Fasse zusammen: ${fm(`${a}x+${c}x`)}`, expect: `${a + c}x`,
+          traps: [{ e: `${a + c}x^2`, tag: 'D_potenz' }, { e: `${a * c}x`, tag: 'D_addiert' }], hint: `${a} Glieder x und ${c} Glieder x ergeben zusammen wie viele x?`, solution: fm(`${a + c}x`) }); }
+      { const a = R.int(2, 7), b = R.int(1, 9), c = R.int(2, 7), d = R.int(1, 9);
+        add(L, { id: 'C3', area: 'C', type: 'term', simplify: 2, prompt: `Fasse zusammen: ${fm(`${a}x+${b}+${c}x+${d}`)}`, expect: `${a + c}x+${b + d}`,
+          traps: [{ e: `${a + b + c + d}x`, tag: 'C_zahl' }], hint: 'Fasse zuerst die x-Glieder zusammen, dann die Zahlen.', solution: fm(`${a + c}x+${b + d}`) }); }
+      { const k = R.int(4, 9), a = R.int(2, 5), b = R.int(2, 5);
+        const opts = R.shuffle([{ t: `${k}y - y = ${k - 1}y`, ok: true }, { t: 'x + x^2 = x^3', tag: 'C_hochzahl' }, { t: `${a}a + ${b}b = ${a + b}ab`, tag: 'C_verschieden' }, { t: `${k}x - ${k}x = x` }]);
+        add(L, { id: 'C4', area: 'C', type: 'mc', prompt: 'Der Kontrolleur prüft vier Etiketten. Welche Umformung ist <b>richtig</b>?',
+          options: opts.map(o => fm(o.t)), correct: opts.findIndex(o => o.ok), optTags: opts.map(o => o.tag || null),
+          hint: `${k}y − y heißt: ${k} Glieder y minus 1 Glied y.`, solution: fm(`${k}y - y = ${k - 1}y`) }); }
+      { const a = R.int(2, 6), b = R.int(3, 6);
+        add(L, { id: 'D1', area: 'D', type: 'term', simplify: 1, prompt: `Vereinfache: ${fm(`${a}*${b}x`)}`, expect: `${a * b}x`, traps: [{ e: `${a + b}x`, tag: 'D_addiert' }],
+          hint: `Multipliziere die Zahlen: ${a} · ${b}. Das x bleibt stehen.`, solution: fm(`${a * b}x`) }); }
+      { const a = R.int(2, 7);
+        add(L, { id: 'D2', area: 'D', type: 'term', simplify: 1, prompt: `Vereinfache: ${fm(`${a}x*x`)}`, expect: `${a}x^2`, traps: [{ e: `${a}x`, tag: 'D_potenz' }, { e: `${2 * a}x`, tag: 'D_potenz' }],
+          hint: 'x · x = x².', solution: fm(`${a}x^2`) }); }
+      { const c = R.int(2, 6), k = R.pick([2, 3, 4]);
+        add(L, { id: 'D3', area: 'D', type: 'term', simplify: 1, prompt: `Vereinfache: ${fm(`${c * k}x/${k}`)}`, expect: `${c}x`, traps: [{ e: `${c}`, tag: null }],
+          hint: `Nur die Zahl wird geteilt: ${c * k} : ${k}. Das x bleibt stehen.`, solution: fm(`${c}x`) }); }
+      { const l = R.int(2, 6), w = R.int(2, 5);
+        add(L, { id: 'D4', area: 'D', type: 'pair', prompt: `Die Grundfläche eines Pakets ist ein Rechteck: ${l}<i>a</i> lang und ${w} cm breit.<br>Gib Terme für den Flächeninhalt <i>A</i> und den Umfang <i>u</i> an.`,
+          visual: { kind: 'rect', l, w, la: `${l}a`, wa: `${w}` }, labels: ['A =', 'u ='], expect: [`${l * w}a`, `${2 * l}a+${2 * w}`], simplify: [1, 2],
+          traps: [[{ e: `${l + w}a`, tag: 'D_addiert' }], [{ e: `${l}a+${w}`, tag: 'D_umfang' }]],
+          hint: `Fläche: ${l}a · ${w}. Umfang: ${l}a + ${w} + ${l}a + ${w}.`, solution: `A = ${fm(`${l * w}a`)}, u = ${fm(`${2 * l}a+${2 * w}`)}` }); }
+      { const b = R.int(3, 15), x = R.int(2, 15), c = x + b;
+        add(L, { id: 'E1', area: 'E', type: 'num', eq: true, prompt: `Schloss 1: Löse die Gleichung ${fm(`x+${b}=${c}`)}`, expect: x, traps: [{ v: c + b, tag: 'E_rueckwaerts' }],
+          hint: `Rechne auf beiden Seiten − ${b}.`, solution: `<i>x</i> = ${c} − ${b} = ${x}` }); }
+      { const a = R.int(2, 9), x = R.int(2, 9), c = a * x;
+        add(L, { id: 'E2', area: 'E', type: 'num', eq: true, prompt: `Schloss 2: Löse die Gleichung ${fm(`${a}x=${c}`)}`, expect: x, traps: [{ v: c * a, tag: 'E_rueckwaerts' }, { v: c - a, tag: 'E_rueckwaerts' }],
+          hint: `${a}x heißt ${a} · x. Teile auf beiden Seiten durch ${a}.`, solution: `<i>x</i> = ${c} : ${a} = ${x}` }); }
+      { const a = R.int(2, 6), b = R.int(2, 9), c = R.int(15, 30);
+        const opts = R.shuffle([{ t: `${a}x=${c - b}`, ok: true }, { t: `${a}x=${c + b}`, tag: 'E_umformung' }, { t: `x+${b}=${c - a}`, tag: 'E_umformung' }, { t: `${a}x+${b}=${c - b}`, tag: 'E_umformung' }]);
+        add(L, { id: 'E3', area: 'E', type: 'mc', prompt: `Schloss 3: Bei der Gleichung ${fm(`${a}x+${b}=${c}`)} wird auf beiden Seiten <b>${fm(`-${b}`)}</b> gerechnet.<br>Was steht danach da?`,
+          options: opts.map(o => fm(o.t)), correct: opts.findIndex(o => o.ok), optTags: opts.map(o => o.tag || null),
+          hint: `Links fällt + ${b} weg. Rechts rechnest du ${c} − ${b}.`, solution: fm(`${a}x=${c - b}`) }); }
+      { const k = R.int(2, 3), x = R.int(3, 12), mm = R.int(2, 9), r = k * x + mm;
+        add(L, { id: 'E4', area: 'E', type: 'num', eq: true, prompt: `Schloss 4: „Das ${MULT[k]} meiner Zahl, vermehrt um ${mm}, ergibt ${r}.“<br>Wie heißt die Zahl?`, expect: x,
+          traps: [{ v: (r + mm) / k, tag: 'E_rueckwaerts' }], hint: `Stelle die Gleichung ${k}x + ${mm} = ${r} auf und löse sie.`, solution: `${fm(`${k}x+${mm}=${r}`)}, also <i>x</i> = ${x}` }); }
+    }
+
+    // ================= STUFE 2 =================
+    { const R = rng(seed), L = 2;
+      { const a = R.int(2, 5), k = R.int(2, 9);
+        add(L, { id: 'A1', area: 'A', type: 'term', free: true, prompt: `Auf dem Etikett steht: „Das ${MULT[a]} einer Zahl, vermindert um ${k}.“<br>Stelle einen Term auf. Für die Variable darfst du einen beliebigen Buchstaben wählen.`,
+          expect: `${a}x-${k}`, traps: [{ e: `${k}-${a}x`, tag: 'A_reihenfolge' }, { e: `${a}(x-${k})`, tag: 'A_klammer' }],
+          hint: `Probiere es zuerst mit der Zahl 10: Das ${MULT[a]} von 10 ist ${a * 10}. Dann ziehst du ${k} ab. Ersetze 10 durch einen Buchstaben.`, solution: `zum Beispiel ${fm(`${a}x-${k}`)}` }); }
+      { const n = R.pick([6, 8, 10, 12, 24]), mm = R.int(2, 9);
+        add(L, { id: 'A2', area: 'A', type: 'term', free: true, prompt: `In jede Kiste passen ${n} Dosen. Lukas packt einige volle Kisten und hat noch ${mm} einzelne Dosen übrig.<br>Stelle einen Term für die Anzahl aller Dosen auf. Für die Variable darfst du einen beliebigen Buchstaben wählen.`,
+          expect: `${n}x+${mm}`, traps: [{ e: `${n}+${mm}x`, tag: 'A_vertauscht' }, { e: `(${n}+${mm})x`, tag: 'A_klammer' }, { e: `${n * mm}x`, tag: null }],
+          hint: `Wähle einen Buchstaben für die Anzahl der vollen Kisten. 2 Kisten enthalten 2 · ${n} Dosen, dazu kommen die ${mm} einzelnen.`, solution: `zum Beispiel ${fm(`${n}x+${mm}`)}, wenn x die Anzahl der Kisten ist` }); }
+      { const p = R.int(2, 6), q = R.pick([3, 4, 5, 6, 7, 8, 9].filter(v => v !== p));
+        add(L, { id: 'A3', area: 'A', type: 'term', free: true, prompt: `Für das Verschicken gibt es einen Paketpreis und einen Päckchenpreis. Heute werden ${p} Pakete und ${q} Päckchen verschickt.<br>Stelle einen Term für die Gesamtkosten auf. Wähle für jede Variable einen eigenen Buchstaben und notiere im Heft, wofür er steht.`,
+          expect: `${p}a+${q}b`, traps: [{ e: `${p + q}ab`, tag: 'C_verschieden' }, { e: `${p + q}a`, tag: 'A_zweivariablen' }],
+          hint: `Zum Beispiel: a für den Paketpreis, b für den Päckchenpreis. ${p} Pakete kosten dann ${p} · a.`, solution: `zum Beispiel ${fm(`${p}a+${q}b`)} mit a = Paketpreis und b = Päckchenpreis` }); }
+      { const d = R.int(2, 4), s = R.int(1, 3);
+        add(L, { id: 'A4', area: 'A', type: 'term', free: true, prompt: `Im Lager werden Kartons gestapelt. Figur 1 hat ${d + s} Kartons, Figur 2 hat ${2 * d + s}, Figur 3 hat ${3 * d + s}.<br>Stelle einen Term auf, mit dem man die Anzahl der Kartons für jede beliebige Figur berechnen kann. Für die Variable darfst du einen beliebigen Buchstaben wählen.`,
+          visual: { kind: 'stack', d, s }, expect: `${d}n+${s}`, traps: [{ e: `${d + s}n`, tag: 'A_klammer' }],
+          hint: `Wähle einen Buchstaben für die Nummer der Figur, zum Beispiel n. Von Figur zu Figur kommen immer ${d} Kartons dazu, die hellen Kartons unten bleiben gleich.`, solution: `zum Beispiel ${fm(`${d}n+${s}`)}, wenn n die Nummer der Figur ist` }); }
+      { const a = R.int(2, 6), b = R.pick([-9, -7, -5, -4, 3, 5, 8, 11]), k = R.int(2, 5), v = a * -k + b;
+        add(L, { id: 'B1', area: 'B', type: 'num', prompt: `Das Display zeigt den Term ${fm(`${a}x${sgn(b)}`)}.<br>Berechne den Wert für <i>x</i> = −${k}.`, expect: v,
+          traps: [{ v: a * k + b, tag: 'B_vorzeichen' }],
+          hint: `Setze −${k} in Klammern ein: ${a} · (−${k}) ${b >= 0 ? '+ ' + b : '− ' + (-b)}. Minus mal Plus ergibt Minus.`,
+          solution: `${a} · (−${k}) ${b >= 0 ? '+ ' + b : '− ' + (-b)} = ${m(v)}` }); }
+      { const c = R.int(1, 5), k = R.int(2, 4), v = k * k + c * k;
+        add(L, { id: 'B2', area: 'B', type: 'num', prompt: `Die Waage rechnet mit ${fm(`x^2-${c === 1 ? '' : c}x`)}.<br>Berechne den Wert für <i>x</i> = −${k}.`, expect: v,
+          traps: [{ v: -k * k + c * k, tag: 'B_quadrat' }, { v: k * k - c * k, tag: 'B_vorzeichen' }, { v: -k * k - c * k, tag: 'B_quadrat' }],
+          hint: `Schreibe (−${k})² − ${c === 1 ? '' : c + ' · '}(−${k}). Ein Quadrat ist nie negativ.`,
+          solution: `(−${k})² − ${c === 1 ? '' : c + ' · '}(−${k}) = ${k * k} + ${c * k} = ${v}` }); }
+      { const mm = R.int(2, 5), q = R.int(1, 6), xs = [-2, 0, 3];
+        add(L, { id: 'B3', area: 'B', type: 'table', prompt: `Fülle die Wertetabelle für den Term ${fm(`${mm}x-${q}`)} aus.`, xs, expect: xs.map(x => mm * x - q),
+          hint: `Für x = −2 rechnest du ${mm} · (−2) − ${q}. Für x = 0 bleibt nur −${q} übrig.`, solution: xs.map(x => `x = ${m(x)}: ${m(mm * x - q)}`).join('; ') }); }
+      { const a = R.int(2, 4), b = R.int(2, 5), A = R.int(2, 6), B = R.int(1, 4), v = a * A + b * B;
+        add(L, { id: 'B4', area: 'B', type: 'num', prompt: `Ein Paket hat zwei Messwerte. Berechne ${fm(`${a}a-${b}b`)} für <i>a</i> = ${A} und <i>b</i> = −${B}.`, expect: v,
+          traps: [{ v: a * A - b * B, tag: 'B_vorzeichen' }], hint: `${a} · ${A} − ${b} · (−${B}). Minus mal Minus ergibt Plus.`,
+          solution: `${a} · ${A} − ${b} · (−${B}) = ${a * A} + ${b * B} = ${v}` }); }
+      { const base = R.int(2, 5);
+        const chips = R.shuffle([{ t: '-2x', ok: true }, { t: 'x', ok: true }, { t: '7x', ok: true }, { t: '0.5x', ok: true },
+          { t: `${base}x^2`, tag: 'C_hochzahl' }, { t: `${base}`, tag: 'C_zahl' }, { t: '3xy', tag: 'C_verschieden' }, { t: 'x^3', tag: 'C_hochzahl' }]);
+        add(L, { id: 'C1', area: 'C', type: 'multi', prompt: `Welche Glieder sind <b>gleichartig</b> zu ${fm(`${base}x`)}? Tippe alle passenden Glieder an.`,
+          options: chips.map(c => fm(c.t).replace('.', ',')), correctSet: chips.map((c, i) => c.ok ? i : -1).filter(i => i >= 0), optTags: chips.map(c => c.tag || null),
+          hint: C1_HINT, solution: `Gleichartig zu ${base}x sind −2x, x, 7x und 0,5x: gleiche Variable x mit Exponent 1. Nicht gleichartig: ${base}x² und x³ (andere Exponenten), 3xy (andere Variablen), ${base} (keine Variable).` }); }
+      { const a = R.int(3, 8), c = R.int(2, 6), b = R.int(4, 12), d = R.pick([1, 2, 3, 5, 6, 7, 9].filter(v => v !== b));
+        add(L, { id: 'C2', area: 'C', type: 'term', simplify: 2, prompt: `Fasse zusammen: ${fm(`${a}x+${b}+${c}x-${d}`)}`, expect: `${a + c}x${sgn(b - d)}`,
+          traps: [{ e: `${a + c}x+${b + d}`, tag: 'C_vorzeichen' }, { e: `${a + c + b - d}x`, tag: 'C_zahl' }],
+          hint: `Sortiere: erst die x-Glieder (${a}x und ${c}x), dann die Zahlen (+${b} und −${d}).`, solution: fm(`${a + c}x${sgn(b - d)}`) }); }
+      { const p = R.int(4, 8), r = R.int(1, p - 1), q = R.int(2, 6), s = R.int(1, 5);
+        add(L, { id: 'C3', area: 'C', type: 'term', simplify: 2, prompt: `Fasse zusammen: ${fm(`${p}x^2+${q}x-${r}x^2+${s === 1 ? '' : s}x`)}`, expect: `${p - r}x^2+${q + s}x`,
+          traps: [{ e: `${p - r + q + s}x^2`, tag: 'C_hochzahl' }, { e: `${p - r + q + s}x^3`, tag: 'C_hochzahl' }, { e: `${p - r + q + s}x`, tag: 'C_hochzahl' }],
+          hint: 'Fasse x²-Glieder nur mit x²-Gliedern zusammen und x-Glieder nur mit x-Gliedern.', solution: fm(`${p - r}x^2+${q + s}x`) }); }
+      { const k = R.int(4, 9), a = R.int(2, 5), b = R.int(2, 5);
+        const opts = R.shuffle([{ t: `${k}y - y = ${k - 1}y`, ok: true }, { t: 'x + x^2 = x^3', tag: 'C_hochzahl' }, { t: `${a}a + ${b}b = ${a + b}ab`, tag: 'C_verschieden' }, { t: `${k}x - ${k}x = x` }]);
+        add(L, { id: 'C4', area: 'C', type: 'mc', prompt: 'Der Kontrolleur prüft vier Etiketten. Welche Umformung ist <b>richtig</b>?',
+          options: opts.map(o => fm(o.t)), correct: opts.findIndex(o => o.ok), optTags: opts.map(o => o.tag || null),
+          hint: `${k}y − y heißt: ${k} Glieder y minus 1 Glied y.`, solution: fm(`${k}y - y = ${k - 1}y`) }); }
+      { const a = R.int(2, 6), b = R.int(3, 7);
+        add(L, { id: 'D1', area: 'D', type: 'term', simplify: 1, prompt: `Vereinfache: ${fm(`${a}x*${b}y`)}`, expect: `${a * b}xy`, traps: [{ e: `${a + b}xy`, tag: 'D_addiert' }],
+          hint: 'Multipliziere erst die Zahlen, dann schreibe die Variablen dahinter.', solution: fm(`${a * b}xy`) }); }
+      { const a = R.int(2, 5), b = R.int(3, 6);
+        add(L, { id: 'D2', area: 'D', type: 'term', simplify: 1, prompt: `Vereinfache: ${fm(`(-${a}x)*${b}x`)}`, expect: `-${a * b}x^2`,
+          traps: [{ e: `${a * b}x^2`, tag: 'D_vorzeichen' }, { e: `-${a * b}x`, tag: 'D_potenz' }, { e: `${a * b}x`, tag: 'D_potenz' }],
+          hint: `(−${a}) · ${b} ergibt eine negative Zahl. Und x · x = x².`, solution: fm(`-${a * b}x^2`) }); }
+      { const c = R.int(2, 6), k = R.pick([3, 4, 6]);
+        add(L, { id: 'D3', area: 'D', type: 'term', simplify: 1, prompt: `Vereinfache: ${fm(`${c * k}x/${k}`)}`, expect: `${c}x`, traps: [{ e: `${c}`, tag: null }],
+          hint: `Nur die Zahl wird geteilt: ${c * k} : ${k}. Das x bleibt stehen.`, solution: fm(`${c}x`) }); }
+      { const l = R.int(3, 6), w = R.int(2, l - 1);
+        add(L, { id: 'D4', area: 'D', type: 'pair', prompt: `Die Grundfläche eines Pakets ist ein Rechteck: ${l}<i>a</i> lang und ${w}<i>a</i> breit.<br>Gib Terme für den Flächeninhalt <i>A</i> und den Umfang <i>u</i> an.`,
+          visual: { kind: 'rect', l, w, la: `${l}a`, wa: `${w}a` }, labels: ['A =', 'u ='], expect: [`${l * w}a^2`, `${2 * (l + w)}a`], simplify: [1, 1],
+          traps: [[{ e: `${l * w}a`, tag: 'D_potenz' }, { e: `${l + w}a`, tag: 'D_addiert' }], [{ e: `${l + w}a`, tag: 'D_umfang' }]],
+          hint: `Fläche: Länge · Breite = ${l}a · ${w}a. Umfang: ${l}a + ${w}a + ${l}a + ${w}a.`, solution: `A = ${fm(`${l * w}a^2`)}, u = ${fm(`${2 * (l + w)}a`)}` }); }
+      { const a = R.int(2, 6), x = R.int(2, 9), b = R.int(1, 12), c = a * x + b;
+        add(L, { id: 'E1', area: 'E', type: 'num', eq: true, prompt: `Schloss 1: Löse die Gleichung ${fm(`${a}x+${b}=${c}`)}`, expect: x,
+          traps: [{ v: (c + b) / a, tag: 'E_rueckwaerts' }], hint: `Rechne zuerst auf beiden Seiten − ${b}. Dann teilst du durch ${a}.`,
+          solution: `${fm(`${a}x=${c - b}`)}, also <i>x</i> = ${x}` }); }
+      { const c = R.int(1, 4), a = c + R.int(2, 4), x = R.int(2, 8), b = R.int(2, 9), d = (a - c) * x - b;
+        add(L, { id: 'E2', area: 'E', type: 'num', eq: true, prompt: `Schloss 2: Löse die Gleichung ${fm(`${a}x-${b}=${c === 1 ? '' : c}x` + (d === 0 ? '' : sgn(d)))}`, expect: x,
+          traps: [{ v: (d - b) / (a - c), tag: 'E_rueckwaerts' }],
+          hint: `Bringe zuerst alle x auf die linke Seite: | − ${c === 1 ? '' : c}x. Dann | + ${b}.`, solution: `${fm(`${a - c}x=${d + b}`)}, also <i>x</i> = ${x}` }); }
+      { const a = R.int(5, 8), c = R.int(2, a - 2), b = R.int(2, 6), d = R.int(8, 15);
+        const opts = R.shuffle([{ t: `${a - c}x+${b}=${d}`, ok: true }, { t: `${a + c}x+${b}=${d}`, tag: 'E_umformung' }, { t: `${a - c}x+${b}=${c}x+${d - c}`, tag: 'E_umformung' }, { t: `${a - c}x=${d}`, tag: 'E_umformung' }]);
+        add(L, { id: 'E3', area: 'E', type: 'mc', prompt: `Schloss 3: Bei der Gleichung ${fm(`${a}x+${b}=${c}x+${d}`)} wird auf beiden Seiten <b>${fm(`-${c}x`)}</b> gerechnet.<br>Was steht danach da?`,
+          options: opts.map(o => fm(o.t)), correct: opts.findIndex(o => o.ok), optTags: opts.map(o => o.tag || null),
+          hint: `Links: ${a}x − ${c}x. Rechts: ${c}x − ${c}x = 0. Die Zahlen bleiben unverändert.`, solution: fm(`${a - c}x+${b}=${d}`) }); }
+      { const k = R.int(3, 6), x = R.int(3, 12), mm = R.int(2, 9), r = k * x - mm;
+        add(L, { id: 'E4', area: 'E', type: 'num', eq: true, prompt: `Schloss 4: „Das ${MULT[k]} meiner Zahl, vermindert um ${mm}, ergibt ${r}.“<br>Wie heißt die Zahl?`, expect: x,
+          traps: [{ v: (r - mm) / k, tag: 'E_rueckwaerts' }], hint: `Stelle die Gleichung ${k}x − ${mm} = ${r} auf und löse sie.`, solution: `${fm(`${k}x-${mm}=${r}`)}, also <i>x</i> = ${x}` }); }
+    }
+
+    // ================= STUFE 3 =================
+    { const R = rng(seed + 303), L = 3;
+      { const k = R.int(2, 5), mm = R.int(2, 9);
+        add(L, { id: 'A1', area: 'A', type: 'term', free: true, prompt: `Auf dem Etikett steht: „Das ${MULT[k]} der Summe aus einer Zahl und ${mm}.“<br>Stelle einen Term auf. Für die Variable darfst du einen beliebigen Buchstaben wählen.`,
+          expect: `${k}(x+${mm})`, traps: [{ e: `${k}x+${mm}`, tag: 'A_klammerfehlt' }, { e: `x+${k * mm}`, tag: 'A_klammerfehlt' }],
+          hint: `Zuerst wird die Summe gebildet, zum Beispiel x + ${mm}. Diese Summe wird als Ganzes vervielfacht.`, solution: `zum Beispiel ${fm(`${k}(x+${mm})`)} = ${fm(`${k}x+${k * mm}`)}` }); }
+      { const mm = R.int(2, 6);
+        add(L, { id: 'A2', area: 'A', type: 'term', free: true, prompt: `Ein rechteckiger Karton ist ${mm} cm schmaler, als er lang ist.<br>Stelle einen Term für den Umfang des Kartons auf. Für die Variable darfst du einen beliebigen Buchstaben wählen.`,
+          expect: `2x+2(x-${mm})`, traps: [{ e: `x+(x-${mm})`, tag: 'D_umfang' }, { e: `2x+(x-${mm})`, tag: 'D_umfang' }, { e: `x(x-${mm})`, tag: 'A_flaeche' }],
+          hint: `Wähle einen Buchstaben für die Länge, zum Beispiel x. Dann ist die Breite x − ${mm}. Ein Rechteck hat zwei Längen und zwei Breiten.`, solution: `zum Beispiel ${fm(`2x+2(x-${mm})`)} = ${fm(`4x-${2 * mm}`)}, wenn x die Länge ist` }); }
+      { const p = R.int(2, 4), q = R.int(2, 5);
+        add(L, { id: 'A3', area: 'A', type: 'term', free: true, prompt: `Im Logistikmuseum zahlen Erwachsene den vollen Eintrittspreis. Kinder bekommen eine Ermäßigung, sie zahlen einen festen Betrag weniger. Eine Gruppe besteht aus ${p} Erwachsenen und ${q} Kindern.<br>Stelle einen Term für den Gesamtpreis auf, in dem der volle Eintrittspreis und die Ermäßigung vorkommen. Wähle für jede Variable einen eigenen Buchstaben und notiere im Heft, wofür er steht.`,
+          expect: `${p}a+${q}(a-b)`, traps: [{ e: `${p}a+${q}a-b`, tag: 'A_klammerfehlt' }, { e: `${p}a+${q}b`, tag: 'A_klammerfehlt' }, { e: `${p}a-${q}b`, tag: 'A_klammerfehlt' }],
+          hint: `Zum Beispiel: a für den vollen Preis, b für die Ermäßigung. Ein Kind zahlt dann (a − b), ${q} Kinder zahlen ${q} · (a − b).`, solution: `zum Beispiel ${fm(`${p}a+${q}(a-b)`)} = ${fm(`${p + q}a-${q}b`)} mit a = voller Preis und b = Ermäßigung` }); }
+      { const d = R.int(5, 7), s = R.int(2, 6);
+        add(L, { id: 'A4', area: 'A', type: 'term', free: true, prompt: `Eine Palettenreihe wird nach einem Muster gepackt. Figur 2 hat ${2 * d + s} Kartons, Figur 3 hat ${3 * d + s}, Figur 4 hat ${4 * d + s}.<br>Stelle einen Term auf, mit dem man die Anzahl der Kartons für jede beliebige Figur berechnen kann. Für die Variable darfst du einen beliebigen Buchstaben wählen.`,
+          expect: `${d}n+${s}`, traps: [{ e: `${d}n+${2 * d + s}`, tag: 'A_klammer' }, { e: `${d}n`, tag: null }],
+          hint: `Wähle einen Buchstaben für die Nummer der Figur. Von Figur zu Figur kommen ${d} Kartons dazu. Wie viele hätte Figur 1, wie viele Figur 0?`, solution: `zum Beispiel ${fm(`${d}n+${s}`)}, wenn n die Nummer der Figur ist` }); }
+      { const c = R.int(1, 5), e = R.int(1, 9), k = R.int(1, 3), v = 2 * k * k + c * k + e;
+        add(L, { id: 'B1', area: 'B', type: 'num', prompt: `Das Display zeigt ${fm(`2x^2-${c === 1 ? '' : c}x+${e}`)}.<br>Berechne den Wert für <i>x</i> = −${k}.`, expect: v,
+          traps: [{ v: -2 * k * k + c * k + e, tag: 'B_quadrat' }, { v: 2 * k * k - c * k + e, tag: 'B_vorzeichen' }, { v: 4 * k * k + c * k + e, tag: 'D_potenz' }],
+          hint: `Potenz zuerst: 2 · (−${k})² = 2 · ${k * k}. Dann − ${c === 1 ? '' : c + ' · '}(−${k}).`, solution: `2 · ${k * k} + ${c * k} + ${e} = ${v}` }); }
+      { const a = R.int(1, 4), k = R.int(1, 4), v = (k + a) * (k + a);
+        add(L, { id: 'B2', area: 'B', type: 'num', prompt: `Die Waage rechnet mit ${fm(`(x-${a})^2`)}.<br>Berechne den Wert für <i>x</i> = −${k}.`, expect: v,
+          traps: [{ v: k * k - a * a, tag: 'B_klammerquadrat' }, { v: k * k + a * a, tag: 'B_klammerquadrat' }, { v: (k - a) * (k - a), tag: 'B_vorzeichen' }, { v: -v, tag: 'B_quadrat' }].filter(t => t.v !== v),
+          hint: `Erst die Klammer: −${k} − ${a} = −${k + a}. Dann quadrieren.`, solution: `(−${k} − ${a})² = (−${k + a})² = ${v}` }); }
+      { const xs = [-3, -1, 2];
+        add(L, { id: 'B3', area: 'B', type: 'table', prompt: `Fülle die Wertetabelle für den Term ${fm('x^2-2x')} aus.`, xs, expect: xs.map(x => x * x - 2 * x),
+          hint: 'Für x = −3: (−3)² − 2 · (−3) = 9 + 6.', solution: xs.map(x => `x = ${m(x)}: ${m(x * x - 2 * x)}`).join('; ') }); }
+      { const A = R.int(2, 4), B = R.int(1, 4), v = 3 * A * -B - B * B;
+        add(L, { id: 'B4', area: 'B', type: 'num', prompt: `Berechne ${fm('3ab-b^2')} für <i>a</i> = ${A} und <i>b</i> = −${B}.`, expect: v,
+          traps: [{ v: 3 * A * -B + B * B, tag: 'B_minusquadrat' }, { v: 3 * A * B - B * B, tag: 'B_vorzeichen' }],
+          hint: `3 · ${A} · (−${B}) − (−${B})². Achtung: −(−${B})² = −${B * B}.`, solution: `3 · ${A} · (−${B}) − (−${B})² = ${m(3 * A * -B)} − ${B * B} = ${m(v)}` }); }
+      { const chips = R.shuffle([{ t: '-x^2y', ok: true }, { t: '5yx^2', ok: true }, { t: '0.5x^2y', ok: true }, { t: 'x^2y', ok: true },
+          { t: '3xy^2', tag: 'C_hochzahl' }, { t: '3x^2', tag: 'C_verschieden' }, { t: '3x^2y^2', tag: 'C_hochzahl' }, { t: 'x^3y', tag: 'C_hochzahl' }]);
+        add(L, { id: 'C1', area: 'C', type: 'multi', prompt: `Welche Glieder sind <b>gleichartig</b> zu ${fm('3x^2y')}? Tippe alle passenden Glieder an.`,
+          options: chips.map(c => fm(c.t).replace('.', ',')), correctSet: chips.map((c, i) => c.ok ? i : -1).filter(i => i >= 0), optTags: chips.map(c => c.tag || null),
+          hint: C1_HINT + ' Die Reihenfolge der Variablen spielt keine Rolle: yx² = x²y.',
+          solution: 'Gleichartig zu 3x²y sind −x²y, 5yx², 0,5x²y und x²y: x mit Exponent 2 und y mit Exponent 1. Nicht gleichartig: 3xy², 3x²y², x³y (andere Exponenten), 3x² (y fehlt).' }); }
+      { const a1 = R.int(2, 5), a2 = a1 + R.int(1, 4), b1 = R.int(3, 9), b2 = b1 + R.int(1, 4), c1 = R.int(3, 9), c2 = R.int(1, 8);
+        add(L, { id: 'C2', area: 'C', type: 'term', simplify: 3, prompt: `Fasse zusammen: ${fm(`-${a1}a+${b1}b-${c1}+${a2}a-${b2}b+${c2}`)}`,
+          expect: `${a2 - a1}a-${b2 - b1}b${sgn(c2 - c1)}`.replace(/[+-]0$/, ''), traps: [{ e: `${a2 + a1}a-${b2 - b1}b${sgn(c2 - c1)}`, tag: 'C_vorzeichen' }],
+          hint: 'Sortiere nach Sorten: a-Glieder, b-Glieder, Zahlen. Das Rechenzeichen wandert mit.', solution: fm(`${a2 - a1}a-${b2 - b1}b${c2 - c1 === 0 ? '' : sgn(c2 - c1)}`) }); }
+      { const p = R.int(5, 9), r = R.int(1, p - 1), q = R.int(2, 7), t = R.pick([1, 2, 3, 4, 5, 6, 7, 8, 9].filter(v => v !== q)), u = R.int(2, 9), w = R.pick([1, 2, 3, 4, 5, 6, 7, 8, 9].filter(v => v !== u));
+        const ex = `${p - r}x^2${sgn(t - q)}x${sgn(u - w)}`.replace(/\+0x|-0x/, '').replace(/[+-]0$/, '');
+        add(L, { id: 'C3', area: 'C', type: 'term', simplify: 3, prompt: `Fasse zusammen: ${fm(`${p}x^2-${q}x+${u}-${r === 1 ? '' : r}x^2+${t === 1 ? '' : t}x-${w}`)}`, expect: ex,
+          traps: [{ e: `${p - r + t - q}x^2${sgn(u - w)}`, tag: 'C_hochzahl' }],
+          hint: 'Drei Sorten: x²-Glieder, x-Glieder und Zahlen. Fasse jede Sorte für sich zusammen.', solution: fm(ex) }); }
+      { const opts = R.shuffle([{ t: '-x - x = -2x', ok: true }, { t: 'x^2 + x^2 = x^4', tag: 'C_hochzahl' }, { t: 'a + a + a = a^3', tag: 'C_potenz' }, { t: '4y - 4 = y', tag: 'C_zahl' }]);
+        add(L, { id: 'C4', area: 'C', type: 'mc', prompt: 'Der Kontrolleur prüft vier Etiketten. Welche Umformung ist <b>richtig</b>?',
+          options: opts.map(o => fm(o.t)), correct: opts.findIndex(o => o.ok), optTags: opts.map(o => o.tag || null),
+          hint: '−x − x: Du hast minus ein x und nimmst noch ein x weg.', solution: fm('-x - x = -2x') }); }
+      { const a = R.int(2, 4), b = R.int(2, 5), c = R.int(2, 3);
+        add(L, { id: 'D1', area: 'D', type: 'term', simplify: 1, prompt: `Vereinfache: ${fm(`(-${a}x)*(-${b}y)*${c}`)}`, expect: `${a * b * c}xy`,
+          traps: [{ e: `-${a * b * c}xy`, tag: 'D_vorzeichen' }, { e: `${a + b + c}xy`, tag: 'D_addiert' }], hint: 'Minus mal Minus ergibt Plus. Multipliziere alle drei Zahlen.', solution: fm(`${a * b * c}xy`) }); }
+      { const a = R.int(2, 5), b = R.int(2, 6);
+        add(L, { id: 'D2', area: 'D', type: 'term', simplify: 1, prompt: `Vereinfache: ${fm(`${a}x^2*(-${b}x)`)}`, expect: `-${a * b}x^3`,
+          traps: [{ e: `-${a * b}x^2`, tag: 'D_potenz' }, { e: `${a * b}x^3`, tag: 'D_vorzeichen' }, { e: `-${a * b}x^6`, tag: 'D_potenz' }, { e: `-${a * b}x`, tag: 'D_potenz' }],
+          hint: 'x² · x = x · x · x = x³.', solution: fm(`-${a * b}x^3`) }); }
+      { const c = R.int(2, 6), k = R.pick([3, 4, 6]);
+        add(L, { id: 'D3', area: 'D', type: 'term', simplify: 1, prompt: `Vereinfache: ${fm(`(-${c * k}x^2y)/${k}`)}`, expect: `-${c}x^2y`,
+          traps: [{ e: `${c}x^2y`, tag: 'D_vorzeichen' }], hint: `Nur der Koeffizient wird geteilt: (−${c * k}) : ${k}. Die Variablen bleiben stehen.`, solution: fm(`-${c}x^2y`) }); }
+      { const l = R.int(3, 5), w = R.int(2, 3), h = R.int(2, 4);
+        add(L, { id: 'D4', area: 'D', type: 'pair', prompt: `Ein quaderförmiges Paket ist ${l}<i>a</i> lang, ${w}<i>a</i> breit und ${h}<i>a</i> hoch.<br>Gib Terme für das Volumen <i>V</i> und den Oberflächeninhalt <i>O</i> an.`,
+          labels: ['V =', 'O ='], expect: [`${l * w * h}a^3`, `${2 * (l * w + l * h + w * h)}a^2`], simplify: [1, 1],
+          traps: [[{ e: `${l * w * h}a`, tag: 'D_potenz' }, { e: `${l * w * h}a^2`, tag: 'D_potenz' }], [{ e: `${l * w + l * h + w * h}a^2`, tag: 'D_oberflaeche' }]],
+          hint: `V = Länge · Breite · Höhe. O = 2 · (${l}a · ${w}a + ${l}a · ${h}a + ${w}a · ${h}a).`,
+          solution: `V = ${fm(`${l * w * h}a^3`)}, O = ${fm(`${2 * (l * w + l * h + w * h)}a^2`)}` }); }
+      { const a = R.int(2, 4), c = R.int(1, 3), x = -R.int(2, 6), b = R.int(1, 8), d = (-a - c) * x + b;
+        add(L, { id: 'E1', area: 'E', type: 'num', eq: true, prompt: `Schloss 1: Löse die Gleichung ${fm(`-${a}x+${b}=${c === 1 ? '' : c}x` + (d === 0 ? '' : sgn(d)))}`, expect: x,
+          traps: [{ v: -x, tag: 'E_teilen' }], hint: `Rechne | − ${c === 1 ? '' : c}x und | − ${b}. Am Ende teilst du durch eine negative Zahl.`, solution: `${fm(`${-a - c}x=${d - b}`)}, also <i>x</i> = ${m(x)}` }); }
+      { const k = R.int(2, 5), x0 = R.int(2, 8), x = k * x0, b = R.int(1, 9), c = x0 + b;
+        add(L, { id: 'E2', area: 'E', type: 'num', eq: true, prompt: `Schloss 2: Löse die Gleichung ${fm(`x/${k}+${b}=${c}`)}`, expect: x,
+          traps: [{ v: x0, tag: 'E_rueckwaerts' }, { v: (c + b) * k, tag: 'E_rueckwaerts' }], hint: `Erst | − ${b}, dann mal ${k}.`, solution: `${fm(`x/${k}=${x0}`)}, also <i>x</i> = ${x}` }); }
+      { const a = R.int(2, 6), v = R.pick([-5, -4, -3, -2, 2, 3, 4, 5]), c = -a * v;
+        const cand = [{ t: `x=${v}`, ok: true }, { t: `x=${-v}`, tag: 'E_teilen' }, { t: `x=${c + a}`, tag: 'E_umformung' }, { t: `x=${c * -a}`, tag: 'E_umformung' }];
+        const opts = R.shuffle(cand.filter((o, i) => cand.findIndex(q => q.t === o.t) === i));
+        add(L, { id: 'E3', area: 'E', type: 'mc', prompt: `Schloss 3: Bei der Gleichung ${fm(`-${a}x=${c}`)} wird auf beiden Seiten durch <b>(−${a})</b> geteilt.<br>Was kommt heraus?`,
+          options: opts.map(o => fm(o.t)), correct: opts.findIndex(o => o.ok), optTags: opts.map(o => o.tag || null),
+          hint: `${m(c)} : (−${a}). Achte auf das Vorzeichen.`, solution: fm(`x=${v}`) }); }
+      { const p = R.int(2, 4), q = p + R.int(1, 3), x = R.int(3, 12), mm = R.int(2, Math.min(9, (q - p) * x - 1)), n = (q - p) * x - mm;
+        add(L, { id: 'E4', area: 'E', type: 'num', eq: true, prompt: `Schloss 4: „Wenn ich zum ${MULT[p]}n meiner Zahl ${mm} addiere, erhalte ich dasselbe, wie wenn ich vom ${MULT[q]}n meiner Zahl ${n} subtrahiere.“<br>Wie heißt die Zahl?`, expect: x,
+          traps: [{ v: (mm - n) / (q - p), tag: 'E_rueckwaerts' }].filter(t => t.v !== x), hint: `Stelle die Gleichung ${p}x + ${mm} = ${q}x − ${n} auf.`, solution: `${fm(`${p}x+${mm}=${q}x-${n}`)}, also <i>x</i> = ${x}` }); }
+    }
+
+    // ================= BONUS: Chefbüro =================
+    { const R = rng(seed + 909);
+      { const a = R.int(2, 4), c = R.int(1, 3), x = -R.int(2, 6), b = R.int(1, 8), d = (-a - c) * x + b;
+        add(0, { id: 'X1', area: 'X', type: 'num', eq: true, prompt: `Löse die Gleichung ${fm(`-${a}x+${b}=${c === 1 ? '' : c}x` + (d === 0 ? '' : sgn(d)))}`,
+          expect: x, hint: 'Bringe alle x auf eine Seite. Die Lösung ist negativ.', solution: `<i>x</i> = ${m(x)}` }); }
+      { const p = R.int(2, 5), q = R.int(2, 6), r = R.int(2, 5), s = R.int(6, 9);
+        add(0, { id: 'X2', area: 'X', type: 'term', simplify: 3, prompt: `Fasse zusammen: ${fm(`${p}ab-${r}a+${q}ab+${s}a-b`)}`, expect: `${p + q}ab+${s - r}a-b`,
+          hint: 'ab, a und b sind drei verschiedene Sorten.', solution: fm(`${p + q}ab+${s - r}a-b`) }); }
+      { const k = R.int(2, 6), t = R.int(8, 15), sum = 2 * t + k;
+        add(0, { id: 'X3', area: 'X', type: 'num', eq: true, prompt: `Mia ist ${k} Jahre älter als Tom. Zusammen sind sie ${sum} Jahre alt. Wie alt ist Tom?`, expect: t,
+          hint: `Tom ist x Jahre alt, Mia x + ${k}. Zusammen: x + x + ${k} = ${sum}.`, solution: `${fm(`2x+${k}=${sum}`)}, Tom ist ${t} Jahre alt.` }); }
+      { const a = R.int(2, 4), b = R.int(2, 4), c = R.int(1, a * b - 1), e = R.int(2, 7);
+        add(0, { id: 'X4', area: 'X', type: 'term', simplify: 2, prompt: `Vereinfache: ${fm(`${a}x*${b}x-${c === 1 ? '' : c}x^2+x*${e}`)}`, expect: `${a * b - c}x^2+${e}x`,
+          hint: 'Erst die Produkte ausrechnen, dann gleichartige Glieder zusammenfassen.', solution: fm(`${a * b - c}x^2+${e}x`) }); }
+    }
+    // ================= SACHAUFGABEN MIT FREI WÄHLBARER VARIABLE =================
+    // Stufe 1: letzter Auftrag jeder Halle B–E · Stufe 2: Aufträge 3 und 4 · Stufe 3: alle Aufträge
+    {
+      const FV = 'Die Variable darfst du frei wählen.';
+      const FV2 = 'Wähle für jede Variable einen eigenen Buchstaben und notiere im Heft, wofür er steht.';
+      const ADV = { 2: 'doppelt', 3: 'dreimal', 4: 'viermal', 5: 'fünfmal' };
+      const swap = (lvl, o) => {
+        const full = o.id + '-' + lvl;
+        const i = T.findIndex(t => t.id === full);
+        const old = T[i];
+        o.area = old.area; o.level = lvl; o.id = full;
+        if (o.type === 'num' && o.traps) o.traps = o.traps.filter(t => Math.abs(t.v - o.expect) > 1e-9);
+        if (o.type === 'term' && o.traps) o.traps = o.traps.filter(t => !equivFree(parse(t.e), parse(o.expect)));
+        if (o.type === 'pair') o.traps = o.traps.map((tr, k) => (o.kinds && o.kinds[k] === 'num') ? tr.filter(t => Math.abs(t.v - o.expect[k]) > 1e-9) : tr.filter(t => !equivFree(parse(t.e), parse(o.expect[k]))));
+        T[i] = o;
+      };
+      const reword = (lvl, id) => { // Zahlenrätsel: Gleichung frei aufstellen
+        const t = T.find(x => x.id === id + '-' + lvl);
+        t.prompt = t.prompt.replace('Wie heißt die Zahl?', `Stelle eine Gleichung auf und löse sie. ${FV} Gib die gesuchte Zahl ein.`);
+        t.eq = false; t.chkEq = t.solution.replace(/<[^>]+>/g, '').split(',')[0]; t.solution = 'zum Beispiel ' + t.solution;
+      };
+      const tv = (o) => Object.assign({ type: 'pair', kinds: ['term', 'num'], labels: ['Term:', 'Wert:'], free: true, simplify: [0, 0] }, o);
+
+      // ---------- Stufe 1 ----------
+      { const R = rng(seed + 5101), L = 1;
+        { const g = R.int(2, 6), p = R.int(2, 5), n = R.int(4, 9);
+          swap(L, tv({ id: 'B4', prompt: `Ein Lieferdienst verlangt ${g} Euro Grundgebühr und ${p} Euro für jedes Paket.<br>Stelle einen Term für den Preis auf und berechne damit den Preis für ${n} Pakete. ${FV}`,
+            expect: [`${p}x+${g}`, p * n + g], traps: [[{ e: `${g}x+${p}`, tag: 'A_vertauscht' }], [{ v: (p + g) * n, tag: 'A_klammer' }]],
+            chk: { expr: `${p}x+${g}`, env: { x: n }, val: p * n + g },
+            hint: `Wähle einen Buchstaben für die Anzahl der Pakete, zum Beispiel x. Für 2 Pakete rechnest du 2 · ${p} + ${g}.`,
+            solution: `zum Beispiel ${fm(`${p}x+${g}`)}; für ${n} Pakete: ${p} · ${n} + ${g} = ${p * n + g} Euro` })); }
+        { const a = R.int(2, 3), c = R.int(2, 6);
+          swap(L, { id: 'C4', type: 'term', free: true, simplify: 2, prompt: `Drei Paketbänder liegen bereit. Das erste ist unbekannt lang. Das zweite ist ${ADV[a]} so lang wie das erste, das dritte ist ${c} m länger als das erste.<br>Stelle einen möglichst einfachen Term für die Gesamtlänge auf. ${FV}`,
+            expect: `${a + 2}x+${c}`, traps: [{ e: `${a + 2 + c}x`, tag: 'C_zahl' }],
+            hint: `Zum Beispiel: x für das erste Band. Dann ist das zweite ${a}x lang und das dritte x + ${c}. Addiere und fasse zusammen.`,
+            solution: `zum Beispiel ${fm(`x+${a}x+x+${c}`)} = ${fm(`${a + 2}x+${c}`)}` }); }
+        { const k = R.pick([2, 3]);
+          swap(L, { id: 'D4', type: 'pair', kinds: ['term', 'term'], free: true, labels: ['A =', 'u ='], simplify: [1, 1],
+            prompt: `Ein rechteckiges Etikett ist ${ADV[k]} so lang wie breit. Die Breite ist unbekannt.<br>Stelle möglichst einfache Terme für den Flächeninhalt <i>A</i> und den Umfang <i>u</i> auf. ${FV}`,
+            expect: [`${k}x^2`, `${2 * (k + 1)}x`], traps: [[{ e: `${k}x`, tag: 'D_potenz' }, { e: `${k + 1}x`, tag: 'D_addiert' }], [{ e: `${k + 1}x`, tag: 'D_umfang' }]],
+            hint: `Zum Beispiel: x für die Breite. Dann ist die Länge ${k}x. Fläche: Länge · Breite. Umfang: alle vier Seiten addieren.`,
+            solution: `zum Beispiel A = ${fm(`${k}x*x`)} = ${fm(`${k}x^2`)} und u = ${fm(`2*${k}x+2x`)} = ${fm(`${2 * (k + 1)}x`)}` }); }
+        reword(L, 'E4');
+      }
+
+      // ---------- Stufe 2 ----------
+      { const R = rng(seed + 5202), L = 2;
+        { const s = R.int(5, 20), p = R.int(3, 8), n = R.int(3, 9);
+          swap(L, tv({ id: 'B3', prompt: `In einer Packstation sind morgens ${s} Fächer belegt. Jede Stunde werden ${p} weitere Fächer belegt.<br>Stelle einen Term für die Anzahl der belegten Fächer auf und berechne damit, wie viele es nach ${n} Stunden sind. ${FV}`,
+            expect: [`${s}+${p}x`, s + p * n], traps: [[{ e: `${p}+${s}x`, tag: 'A_vertauscht' }], [{ v: (s + p) * n, tag: 'A_klammer' }]],
+            chk: { expr: `${s}+${p}x`, env: { x: n }, val: s + p * n },
+            hint: `Zum Beispiel: x für die Anzahl der Stunden. Nach 2 Stunden sind es ${s} + ${p} · 2 Fächer.`,
+            solution: `zum Beispiel ${fm(`${s}+${p}x`)}; nach ${n} Stunden: ${s} + ${p} · ${n} = ${s + p * n}` })); }
+        { const t0 = R.int(2, 6), d = R.int(2, 4), n = Math.ceil((t0 + 1) / d) + R.int(0, 2), v = t0 - d * n;
+          swap(L, tv({ id: 'B4', prompt: `Im Kühllager sind es zu Beginn ${t0} °C. Jede Stunde sinkt die Temperatur um ${d} °C.<br>Stelle einen Term für die Temperatur auf und berechne damit die Temperatur nach ${n} Stunden. ${FV}`,
+            expect: [`${t0}-${d}x`, v], traps: [[{ e: `${d}x-${t0}`, tag: 'A_reihenfolge' }, { e: `${t0}+${d}x`, tag: 'A_rechenart' }], [{ v: -v, tag: 'B_vorzeichen' }]],
+            chk: { expr: `${t0}-${d}x`, env: { x: n }, val: v },
+            hint: `Zum Beispiel: x für die Anzahl der Stunden. Pro Stunde wird es ${d} °C kälter, also wird ${d}x abgezogen.`,
+            solution: `zum Beispiel ${fm(`${t0}-${d}x`)}; nach ${n} Stunden: ${t0} − ${d} · ${n} = ${m(v)} °C` })); }
+        { const a = R.int(2, 3), c = R.int(2, 9);
+          swap(L, { id: 'C3', type: 'term', free: true, simplify: 2, prompt: `Ein Förderband hat drei Abschnitte. Der erste ist unbekannt lang, der zweite ist ${ADV[a]} so lang wie der erste und der dritte ist ${c} m kürzer als der zweite.<br>Stelle einen möglichst einfachen Term für die Gesamtlänge auf. ${FV}`,
+            expect: `${2 * a + 1}x-${c}`, traps: [{ e: `${2 * a + 1}x+${c}`, tag: 'C_vorzeichen' }, { e: `${2 * a + 1 - c}x`, tag: 'C_zahl' }],
+            hint: `Zum Beispiel: x für den ersten Abschnitt. Der zweite ist ${a}x, der dritte ${a}x − ${c}.`,
+            solution: `zum Beispiel ${fm(`x+${a}x+${a}x-${c}`)} = ${fm(`${2 * a + 1}x-${c}`)}` }); }
+        { const b = R.int(2, 3), c = R.int(5, 20);
+          swap(L, { id: 'C4', type: 'term', free: true, simplify: 2, prompt: `Ein Regal hat drei Fächer übereinander. Das unterste ist unbekannt hoch, das mittlere ist ${c} cm höher als das unterste und das oberste ist ${ADV[b]} so hoch wie das unterste.<br>Stelle einen möglichst einfachen Term für die Gesamthöhe auf. ${FV}`,
+            expect: `${b + 2}x+${c}`, traps: [{ e: `${b + 2 + c}x`, tag: 'C_zahl' }],
+            hint: `Zum Beispiel: x für das unterste Fach. Dann ist das mittlere x + ${c} und das oberste ${b}x hoch.`,
+            solution: `zum Beispiel ${fm(`x+x+${c}+${b}x`)} = ${fm(`${b + 2}x+${c}`)}` }); }
+        { const k = R.int(2, 4);
+          swap(L, { id: 'D3', type: 'term', free: true, simplify: 1, prompt: `Ein Paket hat eine quadratische Grundfläche. Es ist ${ADV[k]} so hoch wie breit.<br>Stelle einen möglichst einfachen Term für das Volumen auf. ${FV}`,
+            expect: `${k}x^3`, traps: [{ e: `${k}x^2`, tag: 'D_potenz' }, { e: `${k + 2}x`, tag: 'D_addiert' }],
+            hint: 'Zum Beispiel: x für die Seitenlänge der Grundfläche. Volumen = Länge · Breite · Höhe.',
+            solution: `zum Beispiel ${fm(`x*x*${k}x`)} = ${fm(`${k}x^3`)}` }); }
+        { const k = R.int(3, 5);
+          swap(L, { id: 'D4', type: 'pair', kinds: ['term', 'term'], free: true, labels: ['A =', 'u ='], simplify: [1, 1],
+            prompt: `Ein rechteckiges Etikett ist ${ADV[k]} so lang wie breit. Die Breite ist unbekannt.<br>Stelle möglichst einfache Terme für den Flächeninhalt <i>A</i> und den Umfang <i>u</i> auf. ${FV}`,
+            expect: [`${k}x^2`, `${2 * (k + 1)}x`], traps: [[{ e: `${k}x`, tag: 'D_potenz' }, { e: `${k + 1}x`, tag: 'D_addiert' }], [{ e: `${k + 1}x`, tag: 'D_umfang' }]],
+            hint: `Zum Beispiel: x für die Breite. Dann ist die Länge ${k}x.`,
+            solution: `zum Beispiel A = ${fm(`${k}x^2`)} und u = ${fm(`${2 * (k + 1)}x`)}` }); }
+        { const x = R.int(3, 15), d = R.int(1, 6), s = 2 * x + d;
+          swap(L, { id: 'E3', type: 'num', prompt: `Schloss 3: Zwei Pakete wiegen zusammen ${s} kg. Das eine wiegt ${d} kg mehr als das andere.<br>Wie viele kg wiegt das leichtere Paket? Stelle eine Gleichung auf und löse sie. ${FV}`,
+            expect: x, traps: [{ v: (s + d) / 2, tag: 'E_rueckwaerts' }, { v: x + d, tag: null }], chkEq: `x+x+${d}=${s}`,
+            hint: `Zum Beispiel: x für das leichtere Paket. Das schwerere wiegt dann x + ${d}. Zusammen: x + x + ${d} = ${s}.`,
+            solution: `zum Beispiel ${fm(`x+x+${d}=${s}`)}, also ${fm(`2x=${s - d}`)}: Das leichtere Paket wiegt ${x} kg.` }); }
+        reword(L, 'E4');
+      }
+
+      // ---------- Stufe 3 ----------
+      { const R = rng(seed + 5303), L = 3;
+        { const h = R.int(2, 6), w = R.int(3, 8), v = 16 * w + 4 * h;
+          swap(L, tv({ id: 'B1', prompt: `Ein quaderförmiges Paket ist doppelt so lang wie breit und ${h} cm höher als breit.<br>Stelle einen Term für die Summe aller zwölf Kantenlängen auf und berechne sie für eine Breite von ${w} cm. ${FV}`,
+            expect: [`4(x+2x+x+${h})`, v], traps: [[{ e: `4x+8x+4x+${h}`, tag: 'A_klammerfehlt' }, { e: `x+2x+x+${h}`, tag: 'D_oberflaeche' }], [{ v: 16 * w + h, tag: 'A_klammerfehlt' }, { v: 4 * w + h, tag: 'D_oberflaeche' }]],
+            chk: { expr: `16x+${4 * h}`, env: { x: w }, val: v },
+            hint: `Zum Beispiel: x für die Breite. Länge 2x, Höhe x + ${h}. Jede Kantenlänge kommt viermal vor.`,
+            solution: `zum Beispiel ${fm(`4(x+2x+x+${h})`)} = ${fm(`16x+${4 * h}`)}; für ${w} cm: ${v} cm` })); }
+        { const h = R.int(2, 6), s = R.int(2, 6), v = 2 * s * s + 4 * h * s;
+          swap(L, tv({ id: 'B2', prompt: `Ein Paket hat eine quadratische Grundfläche und ist ${h} cm hoch.<br>Stelle einen Term für den Oberflächeninhalt auf und berechne ihn für eine Seitenlänge der Grundfläche von ${s} cm. ${FV}`,
+            expect: [`2x^2+${4 * h}x`, v], traps: [[{ e: `x^2+${4 * h}x`, tag: 'D_oberflaeche' }, { e: `2x^2+${h}x`, tag: 'D_oberflaeche' }], [{ v: s * s + 4 * h * s, tag: 'D_oberflaeche' }, { v: 4 * s + 4 * h * s, tag: 'D_potenz' }]],
+            chk: { expr: `2x^2+${4 * h}x`, env: { x: s }, val: v },
+            hint: `Zum Beispiel: x für die Seitenlänge. Boden und Deckel haben je x², die vier Seitenflächen je ${h} · x.`,
+            solution: `zum Beispiel ${fm(`2x^2+4*${h}x`)} = ${fm(`2x^2+${4 * h}x`)}; für ${s} cm: ${v} cm²` })); }
+        { const t0 = -R.int(1, 5), d = R.int(2, 4), n = R.int(3, 6), v = t0 - d * n;
+          swap(L, tv({ id: 'B3', prompt: `Im Tiefkühllager sind es zu Beginn ${m(t0)} °C. Jede Stunde sinkt die Temperatur um ${d} °C.<br>Stelle einen Term für die Temperatur auf und berechne damit die Temperatur nach ${n} Stunden. ${FV}`,
+            expect: [`${t0}-${d}x`, v], traps: [[{ e: `${-t0}-${d}x`, tag: 'B_vorzeichen' }, { e: `${t0}+${d}x`, tag: 'A_rechenart' }], [{ v: -t0 - d * n, tag: 'B_vorzeichen' }, { v: t0 + d * n, tag: 'A_rechenart' }]],
+            chk: { expr: `${t0}-${d}x`, env: { x: n }, val: v },
+            hint: `Zum Beispiel: x für die Anzahl der Stunden. Startwert ${m(t0)}, dann wird ${d}x abgezogen.`,
+            solution: `zum Beispiel ${fm(`${t0}-${d}x`)}; nach ${n} Stunden: ${m(t0)} − ${d} · ${n} = ${m(v)} °C` })); }
+        { const p = R.int(2, 4), q = R.int(2, 5), E1 = R.int(9, 15), K = R.int(4, 8), v = p * E1 + q * K;
+          swap(L, tv({ id: 'B4', prompt: `Im Logistikmuseum zahlen Erwachsene den vollen Preis und Kinder einen ermäßigten Kinderpreis. Eine Gruppe besteht aus ${p} Erwachsenen und ${q} Kindern.<br>Stelle einen Term für den Gesamtpreis auf und berechne ihn für einen vollen Preis von ${E1} Euro und einen Kinderpreis von ${K} Euro. ${FV2}`,
+            expect: [`${p}a+${q}b`, v], traps: [[{ e: `${p + q}ab`, tag: 'C_verschieden' }, { e: `${p + q}a`, tag: 'A_zweivariablen' }], [{ v: p * K + q * E1, tag: 'A_vertauscht' }]],
+            chk: { expr: `${p}a+${q}b`, env: { a: E1, b: K }, val: v },
+            hint: `Zum Beispiel: a für den vollen Preis, b für den Kinderpreis. Setze dann ${E1} für a und ${K} für b ein.`,
+            solution: `zum Beispiel ${fm(`${p}a+${q}b`)}; ${p} · ${E1} + ${q} · ${K} = ${v} Euro` })); }
+        { const c = R.int(2, 6), s = R.pick([20, 25, 30]);
+          swap(L, { id: 'C1', type: 'term', free: true, simplify: 2, prompt: `Ein Paket ist doppelt so lang wie breit und ${c} cm höher als breit. Das Paketband läuft einmal um die Länge und einmal um die Breite. Dafür braucht man 2 · Länge + 2 · Breite + 4 · Höhe, dazu kommen ${s} cm für die Schleife.<br>Stelle einen möglichst einfachen Term für die Länge des Paketbands auf. ${FV}`,
+            expect: `10x+${4 * c + s}`, traps: [{ e: `10x+${c + s}`, tag: 'A_klammerfehlt' }, { e: `7x+${c + s}`, tag: 'A_klammerfehlt' }],
+            hint: `Zum Beispiel: x für die Breite. Länge 2x, Höhe x + ${c}. Bei 4 · (x + ${c}) wird jedes Glied mit 4 multipliziert.`,
+            solution: `zum Beispiel ${fm(`2*2x+2x+4(x+${c})+${s}`)} = ${fm(`10x+${4 * c + s}`)}` }); }
+        { const g1 = R.int(2, 4), k1 = R.int(1, 4), g2 = R.int(1, 3), k2 = R.int(2, 5);
+          swap(L, { id: 'C2', type: 'term', free: true, simplify: 2, prompt: `Im Lager werden große und kleine Kartons gestapelt. Alle großen sind gleich hoch, alle kleinen auch. Stapel 1 besteht aus ${g1} großen und ${k1} kleinen Kartons, Stapel 2 aus ${g2} großen und ${k2} kleinen. Von Stapel 2 wird ein kleiner Karton heruntergenommen.<br>Stelle einen möglichst einfachen Term für die Gesamthöhe beider Stapel auf. ${FV2}`,
+            expect: `${g1 + g2}a+${k1 + k2 - 1}b`, traps: [{ e: `${g1 + g2 + k1 + k2 - 1}a`, tag: 'C_verschieden' }, { e: `${g1 + g2}a+${k1 + k2}b`, tag: null }],
+            hint: 'Zum Beispiel: a für die Höhe eines großen und b für die Höhe eines kleinen Kartons. Fasse a-Glieder und b-Glieder getrennt zusammen.',
+            solution: `zum Beispiel ${fm(`${g1}a+${k1}b+${g2}a+${k2}b-b`)} = ${fm(`${g1 + g2}a+${k1 + k2 - 1}b`)}` }); }
+        { const n1 = R.int(4, 7), r = R.int(1, n1 - 2), n2 = R.int(2, 4), w = R.int(2, 3);
+          swap(L, { id: 'C3', type: 'term', free: true, simplify: 2, prompt: `Auf eine Kiste werden ${n1} quadratische Etiketten mit gleicher, unbekannter Seitenlänge geklebt. Dazu kommen ${n2} Streifen, die so lang sind wie die Seite eines Etiketts und ${w} cm breit. Danach werden ${r} Etiketten wieder abgezogen.<br>Stelle einen möglichst einfachen Term für die beklebte Fläche auf. ${FV}`,
+            expect: `${n1 - r}x^2+${n2 * w}x`, traps: [{ e: `${n1 - r + n2 * w}x^2`, tag: 'C_hochzahl' }, { e: `${n1 + r}x^2+${n2 * w}x`, tag: 'C_vorzeichen' }],
+            hint: 'Zum Beispiel: x für die Seitenlänge. Ein Etikett hat die Fläche x², ein Streifen die Fläche x · Breite.',
+            solution: `zum Beispiel ${fm(`${n1}x^2+${n2}*${w}x-${r}x^2`)} = ${fm(`${n1 - r}x^2+${n2 * w}x`)}` }); }
+        { const c = R.int(2, 6);
+          swap(L, { id: 'C4', type: 'term', free: true, simplify: 2, prompt: `Ein Förderband hat vier Abschnitte. Der erste ist unbekannt lang, der zweite ist ${c} m länger als der erste, der dritte ist halb so lang wie der erste und der vierte doppelt so lang wie der zweite.<br>Stelle einen möglichst einfachen Term für die Gesamtlänge auf. ${FV}`,
+            expect: `4.5x+${3 * c}`, traps: [{ e: `4.5x+${2 * c}`, tag: 'A_klammerfehlt' }],
+            hint: 'Zum Beispiel: x für den ersten Abschnitt. Halb so lang ist 0,5x. Doppelt so lang wie der zweite ist 2 · (x + ' + c + ').',
+            solution: `zum Beispiel ${fm(`x+x+${c}+0,5x+2(x+${c})`)} = ${fm(`4,5x+${3 * c}`)}` }); }
+        { const k = R.int(2, 3);
+          swap(L, { id: 'D1', type: 'term', free: true, simplify: 1, prompt: `Ein kleiner würfelförmiger Karton hat eine unbekannte Kantenlänge. Ein großer Würfel hat eine ${ADV[k]} so lange Kante.<br>Stelle einen möglichst einfachen Term für das Volumen des großen Würfels auf. ${FV}`,
+            expect: `${k * k * k}x^3`, traps: [{ e: `${k}x^3`, tag: 'D_klammerpotenz' }, { e: `${3 * k}x^3`, tag: 'D_klammerpotenz' }, { e: `${k * k * k}x`, tag: 'D_potenz' }],
+            hint: `Zum Beispiel: x für die kleine Kante. Die große Kante ist ${k}x, das Volumen ${k}x · ${k}x · ${k}x.`,
+            solution: `zum Beispiel ${fm(`(${k}x)^3`)} = ${fm(`${k}x*${k}x*${k}x`)} = ${fm(`${k * k * k}x^3`)}` }); }
+        { const k = R.int(2, 4), mm = R.int(2, 4);
+          swap(L, { id: 'D2', type: 'term', free: true, simplify: 1, prompt: `Ein Paket ist ${ADV[k]} so lang wie breit und ${ADV[mm]} so hoch wie breit.<br>Stelle einen möglichst einfachen Term für das Volumen auf. ${FV}`,
+            expect: `${k * mm}x^3`, traps: [{ e: `${k * mm}x^2`, tag: 'D_potenz' }, { e: `${k + mm + 1}x^3`, tag: 'D_addiert' }],
+            hint: `Zum Beispiel: x für die Breite. Länge ${k}x, Höhe ${mm}x.`, solution: `zum Beispiel ${fm(`${k}x*x*${mm}x`)} = ${fm(`${k * mm}x^3`)}` }); }
+        { const d = R.pick([2, 3]), j = R.int(2, 3), k = d * j;
+          swap(L, { id: 'D3', type: 'term', free: true, simplify: 1, prompt: `Ein quaderförmiger Block ist ${k}-mal so lang wie breit und genauso hoch wie breit. Er wird in ${d} gleich große Teile zerlegt.<br>Stelle einen möglichst einfachen Term für das Volumen eines Teils auf. ${FV}`,
+            expect: `${j}x^3`, traps: [{ e: `${k}x^3`, tag: null }, { e: `${j}x^2`, tag: 'D_potenz' }],
+            hint: `Zum Beispiel: x für die Breite. Das Volumen des Blocks ist ${k}x · x · x. Teile durch ${d}.`, solution: `zum Beispiel ${fm(`${k}x^3/${d}`)} = ${fm(`${j}x^3`)}` }); }
+        { const k = R.int(2, 3), mm = R.int(2, 4);
+          swap(L, { id: 'D4', type: 'pair', kinds: ['term', 'term'], free: true, labels: ['V =', 'O ='], simplify: [1, 1],
+            prompt: `Ein Paket ist ${ADV[k]} so lang wie breit und ${ADV[mm]} so hoch wie breit.<br>Stelle möglichst einfache Terme für das Volumen <i>V</i> und den Oberflächeninhalt <i>O</i> auf. ${FV}`,
+            expect: [`${k * mm}x^3`, `${2 * (k + mm + k * mm)}x^2`], traps: [[{ e: `${k * mm}x^2`, tag: 'D_potenz' }], [{ e: `${k + mm + k * mm}x^2`, tag: 'D_oberflaeche' }]],
+            hint: `Zum Beispiel: x für die Breite. Länge ${k}x, Höhe ${mm}x. Die Oberfläche besteht aus drei Flächenpaaren.`,
+            solution: `zum Beispiel V = ${fm(`${k * mm}x^3`)} und O = ${fm(`2(${k}x^2+${mm}x^2+${k * mm}x^2)`)} = ${fm(`${2 * (k + mm + k * mm)}x^2`)}` }); }
+        { const x = R.int(3, 10), d = R.int(1, 7), s = 3 * x + d;
+          swap(L, { id: 'E1', type: 'num', prompt: `Schloss 1: Zwei Pakete wiegen zusammen ${s} kg. Das schwerere wiegt ${d} kg mehr als das Doppelte des leichteren.<br>Wie viele kg wiegt das leichtere Paket? Stelle eine Gleichung auf und löse sie. ${FV}`,
+            expect: x, traps: [{ v: (s + d) / 3, tag: 'E_rueckwaerts' }, { v: 2 * x + d, tag: null }], chkEq: `x+2x+${d}=${s}`,
+            hint: `Zum Beispiel: x für das leichtere Paket. Das schwerere wiegt 2x + ${d}.`, solution: `zum Beispiel ${fm(`x+2x+${d}=${s}`)}, also ${fm(`3x=${s - d}`)}: ${x} kg` }); }
+        { const x = -R.int(2, 8), d = R.int(2, 4), n = R.int(2, 5), T0 = x - d * n;
+          swap(L, { id: 'E2', type: 'num', prompt: `Schloss 2: Die Temperatur im Tiefkühllager sinkt jede Stunde um ${d} °C. Nach ${n} Stunden zeigt das Thermometer ${m(T0)} °C.<br>Welche Temperatur hatte das Lager zu Beginn? Stelle eine Gleichung auf und löse sie. ${FV}`,
+            expect: x, traps: [{ v: T0 - d * n, tag: 'E_rueckwaerts' }, { v: -x, tag: 'B_vorzeichen' }], chkEq: `x-${d * n}=${T0}`,
+            hint: `Zum Beispiel: x für die Starttemperatur. Nach ${n} Stunden ist sie um ${d} · ${n} gesunken.`, solution: `zum Beispiel ${fm(`x-${d * n}=${T0}`)}, also ${m(x)} °C` }); }
+        { const x = R.int(4, 10), a = R.int(5, 15), b = a + R.int(5, 10), B0 = R.int(20, 60), A0 = B0 + (b - a) * x;
+          swap(L, { id: 'E3', type: 'num', prompt: `Schloss 3: Lager A hat ${A0} Pakete und bekommt jeden Tag ${a} dazu. Lager B hat ${B0} Pakete und bekommt jeden Tag ${b} dazu.<br>Nach wie vielen Tagen haben beide Lager gleich viele Pakete? Stelle eine Gleichung auf und löse sie. ${FV}`,
+            expect: x, traps: [{ v: (A0 + B0) / (b - a), tag: 'E_umformung' }], chkEq: `${A0}+${a}x=${B0}+${b}x`,
+            hint: `Zum Beispiel: x für die Anzahl der Tage. Lager A: ${A0} + ${a}x. Lager B: ${B0} + ${b}x. Setze beide gleich.`,
+            solution: `zum Beispiel ${fm(`${A0}+${a}x=${B0}+${b}x`)}, also ${fm(`${A0 - B0}=${b - a}x`)}: nach ${x} Tagen` }); }
+        reword(L, 'E4');
+      }
+    }
+    // ================= WORTAUFGABEN OHNE SACHKONTEXT (Variable frei wählbar) =================
+    // Mischung: Stufe 1 C4 · Stufe 2 B3, C3, D3 · Stufe 3 B1, B3, C1, C3, D1, D3, E1
+    {
+      const FV = 'Die Variable darfst du frei wählen.';
+      const FV2 = 'Für die beiden Zahlen darfst du zwei beliebige Buchstaben wählen.';
+      const swap = (lvl, o) => {
+        const full = o.id + '-' + lvl, i = T.findIndex(t => t.id === full), old = T[i];
+        o.area = old.area; o.level = lvl; o.id = full;
+        if (o.type === 'num' && o.traps) o.traps = o.traps.filter(t => Math.abs(t.v - o.expect) > 1e-9);
+        if (o.type === 'term' && o.traps) o.traps = o.traps.filter(t => !equivFree(parse(t.e), parse(o.expect)));
+        if (o.type === 'pair') o.traps = o.traps.map((tr, k) => (o.kinds && o.kinds[k] === 'num') ? tr.filter(t => Math.abs(t.v - o.expect[k]) > 1e-9) : tr.filter(t => !equivFree(parse(t.e), parse(o.expect[k]))));
+        T[i] = o;
+      };
+      const tv = (o) => Object.assign({ type: 'pair', kinds: ['term', 'num'], labels: ['Term:', 'Wert:'], free: true, simplify: [0, 0] }, o);
+
+      // ---------- Stufe 1 ----------
+      { const R = rng(seed + 7101), L = 1;
+        { const a = R.int(2, 5), b = R.pick([2, 3, 4, 5].filter(v => v !== a)), c = R.int(2, 9);
+          swap(L, { id: 'C4', type: 'term', free: true, simplify: 2, prompt: `Addiere das ${MULT[a]} einer Zahl, das ${MULT[b]} derselben Zahl und ${c}.<br>Stelle einen Term auf und fasse ihn so weit wie möglich zusammen. ${FV}`,
+            expect: `${a + b}x+${c}`, traps: [{ e: `${a + b + c}x`, tag: 'C_zahl' }, { e: `${a * b}x+${c}`, tag: 'D_addiert' }],
+            hint: `Zum Beispiel mit x: ${a}x + ${b}x + ${c}. Fasse dann die x-Glieder zusammen.`, solution: `zum Beispiel ${fm(`${a}x+${b}x+${c}`)} = ${fm(`${a + b}x+${c}`)}` }); }
+      }
+
+      // ---------- Stufe 2 ----------
+      { const R = rng(seed + 7202), L = 2;
+        { const a = R.int(2, 6), b = R.int(2, 9), k = R.int(2, 5), v = -a * k - b;
+          swap(L, tv({ id: 'B3', prompt: `Bilde das ${MULT[a]} einer Zahl und subtrahiere ${b}.<br>Stelle einen Term auf und berechne seinen Wert, wenn die Zahl −${k} ist. ${FV}`,
+            expect: [`${a}x-${b}`, v], traps: [[{ e: `${b}-${a}x`, tag: 'A_reihenfolge' }], [{ v: a * k - b, tag: 'B_vorzeichen' }, { v: -a * k + b, tag: 'C_vorzeichen' }]],
+            chk: { expr: `${a}x-${b}`, env: { x: -k }, val: v },
+            hint: `Zum Beispiel mit x: ${a}x − ${b}. Setze −${k} in Klammern ein: ${a} · (−${k}) − ${b}.`,
+            solution: `zum Beispiel ${fm(`${a}x-${b}`)}; Wert: ${a} · (−${k}) − ${b} = ${m(v)}` })); }
+        { const a = R.int(3, 7), b = R.int(4, 12), c = R.int(2, 6), d = R.pick([2, 3, 5, 7, 9].filter(v => v !== b));
+          swap(L, { id: 'C3', type: 'term', free: true, simplify: 2, prompt: `Addiere das ${MULT[a] || a + '-fache'} einer Zahl, ${b}, das ${MULT[c]} derselben Zahl und −${d}.<br>Stelle einen Term auf und fasse ihn so weit wie möglich zusammen. ${FV}`,
+            expect: `${a + c}x${sgn(b - d)}`, traps: [{ e: `${a + c}x+${b + d}`, tag: 'C_vorzeichen' }, { e: `${a + c + b - d}x`, tag: 'C_zahl' }],
+            hint: `Zum Beispiel mit x: ${a}x + ${b} + ${c}x + (−${d}). Fasse x-Glieder und Zahlen getrennt zusammen.`,
+            solution: `zum Beispiel ${fm(`${a}x+${b}+${c}x-${d}`)} = ${fm(`${a + c}x${sgn(b - d)}`)}` }); }
+        { const a = R.int(2, 6), b = R.int(3, 7);
+          swap(L, { id: 'D3', type: 'term', free: true, simplify: 1, prompt: `Multipliziere das ${MULT[a]} einer Zahl mit dem ${MULT[b] ? MULT[b].replace(/e$/, 'en') : b + '-fachen'} einer anderen Zahl.<br>Stelle einen Term auf und vereinfache ihn so weit wie möglich. ${FV2}`,
+            expect: `${a * b}xy`, traps: [{ e: `${a + b}xy`, tag: 'D_addiert' }, { e: `${a * b}x^2`, tag: 'A_zweivariablen' }],
+            hint: `Zum Beispiel mit x und y: ${a}x · ${b}y. Multipliziere die Zahlen, die Variablen schreibst du dahinter.`,
+            solution: `zum Beispiel ${fm(`${a}x*${b}y`)} = ${fm(`${a * b}xy`)}` }); }
+      }
+
+      // ---------- Stufe 3 ----------
+      { const R = rng(seed + 7303), L = 3;
+        { const q = R.int(2, 3), p = R.int(2, 6), k = R.int(2, 4), v = q * k * k + p * k;
+          swap(L, tv({ id: 'B1', prompt: `Quadriere eine Zahl, nimm das Ergebnis mal ${q} und subtrahiere das ${MULT[p]} der Zahl.<br>Stelle einen Term auf und berechne seinen Wert, wenn die Zahl −${k} ist. ${FV}`,
+            expect: [`${q}x^2-${p}x`, v], traps: [[{ e: `(${q}x)^2-${p}x`, tag: 'D_klammerpotenz' }], [{ v: -q * k * k + p * k, tag: 'B_quadrat' }, { v: q * k * k - p * k, tag: 'B_vorzeichen' }]],
+            chk: { expr: `${q}x^2-${p}x`, env: { x: -k }, val: v },
+            hint: `Zum Beispiel mit x: ${q}x² − ${p}x. Beim Einsetzen: ${q} · (−${k})² − ${p} · (−${k}).`,
+            solution: `zum Beispiel ${fm(`${q}x^2-${p}x`)}; Wert: ${q} · ${k * k} + ${p * k} = ${v}` })); }
+        { const a = R.int(2, 5), A = R.int(2, 6), B = R.int(2, 4), v = a * A - B * B;
+          swap(L, tv({ id: 'B3', prompt: `Subtrahiere vom ${MULT[a]}n einer ersten Zahl das Quadrat einer zweiten Zahl.<br>Stelle einen Term auf und berechne seinen Wert, wenn die erste Zahl ${A} und die zweite Zahl −${B} ist. ${FV2}`,
+            expect: [`${a}a-b^2`, v], traps: [[{ e: `b^2-${a}a`, tag: 'A_reihenfolge' }], [{ v: a * A + B * B, tag: 'B_minusquadrat' }]],
+            chk: { expr: `${a}a-b^2`, env: { a: A, b: -B }, val: v },
+            hint: `Zum Beispiel mit a und b: ${a}a − b². Setze ein: ${a} · ${A} − (−${B})². Erst quadrieren, dann subtrahieren.`,
+            solution: `zum Beispiel ${fm(`${a}a-b^2`)}; Wert: ${a * A} − ${B * B} = ${m(v)}` })); }
+        { const p = R.int(2, 4), r = R.int(1, 3), q = R.int(3, 6), s = R.int(5, 7), c = R.int(2, 9);
+          swap(L, { id: 'C1', type: 'term', free: true, simplify: 3, prompt: `Bilde die Summe aus dem ${MULT[p]}n des Quadrats einer Zahl, dem ${MULT[q]}n der Zahl, ${c} und ${r === 1 ? 'dem Quadrat' : 'dem ' + MULT[r] + 'n des Quadrats'} derselben Zahl. Subtrahiere davon das ${MULT[s]} der Zahl.<br>Stelle einen Term auf und fasse ihn so weit wie möglich zusammen. ${FV}`,
+            expect: `${p + r}x^2${sgn(q - s)}x+${c}`.replace(/[+-]0x/, ''), traps: [{ e: `${p + r + q - s}x^2+${c}`, tag: 'C_hochzahl' }],
+            hint: `Zum Beispiel mit x: ${p}x² + ${q}x + ${c} + ${r === 1 ? '' : r}x² − ${s}x. Drei Sorten: x², x und Zahlen.`,
+            solution: `zum Beispiel ${fm(`${p}x^2+${q}x+${c}+${r === 1 ? '' : r}x^2-${s}x`)} = ${fm(`${p + r}x^2${sgn(q - s)}x+${c}`.replace(/[+-]0x/, ''))}` }); }
+        { const a = R.int(4, 7), c = R.int(1, a - 1), b = R.int(2, 5), d = R.int(2, 6);
+          swap(L, { id: 'C3', type: 'term', free: true, simplify: 2, prompt: `Addiere das ${MULT[a]} einer ersten Zahl und das ${MULT[b]} einer zweiten Zahl. Subtrahiere davon das ${c === 1 ? 'Einfache' : MULT[c]} der ersten Zahl und addiere das ${MULT[d]} der zweiten Zahl.<br>Stelle einen Term auf und fasse ihn so weit wie möglich zusammen. ${FV2}`,
+            expect: `${a - c}a+${b + d}b`, traps: [{ e: `${a - c + b + d}ab`, tag: 'C_verschieden' }, { e: `${a - c + b + d}a`, tag: 'A_zweivariablen' }],
+            hint: 'Zum Beispiel mit a für die erste und b für die zweite Zahl. Fasse a-Glieder und b-Glieder getrennt zusammen.',
+            solution: `zum Beispiel ${fm(`${a}a+${b}b-${c === 1 ? '' : c}a+${d}b`)} = ${fm(`${a - c}a+${b + d}b`)}` }); }
+        { const p = R.int(2, 4), q = R.int(2, 5);
+          swap(L, { id: 'D1', type: 'term', free: true, simplify: 1, prompt: `Multipliziere das ${MULT[p]} des Quadrats einer Zahl mit dem ${MULT[q]}n der Gegenzahl dieser Zahl.<br>Stelle einen Term auf und vereinfache ihn so weit wie möglich. ${FV}`,
+            expect: `-${p * q}x^3`, traps: [{ e: `${p * q}x^3`, tag: 'D_vorzeichen' }, { e: `-${p * q}x^2`, tag: 'D_potenz' }],
+            hint: `Die Gegenzahl von x ist −x. Zum Beispiel: ${p}x² · (−${q}x).`, solution: `zum Beispiel ${fm(`${p}x^2*(-${q}x)`)} = ${fm(`-${p * q}x^3`)}` }); }
+        { const a = R.pick([6, 8, 9, 12]), d = R.pick([2, 3].filter(v => a % v === 0));
+          swap(L, { id: 'D3', type: 'term', free: true, simplify: 1, prompt: `Multipliziere das ${({ 6: 'Sechsfache', 8: 'Achtfache', 9: 'Neunfache', 12: 'Zwölffache' })[a]} einer Zahl mit dem Quadrat einer zweiten Zahl und teile das Ergebnis durch ${d}.<br>Stelle einen Term auf und vereinfache ihn so weit wie möglich. ${FV2}`,
+            expect: `${a / d}xy^2`, traps: [{ e: `${a / d}xy`, tag: 'D_potenz' }, { e: `${a}xy^2`, tag: null }],
+            hint: `Zum Beispiel mit x und y: ${a}x · y² : ${d}. Nur der Koeffizient wird geteilt.`, solution: `zum Beispiel ${fm(`${a}x*y^2/${d}`)} = ${fm(`${a / d}xy^2`)}` }); }
+        { const k = R.int(2, 4), x = -R.int(2, 8), c = R.int(3, 12), d = c - k * x - x;
+          swap(L, { id: 'E1', type: 'num', prompt: `Schloss 1: Subtrahiert man das ${MULT[k]} einer Zahl von ${c}, erhält man dasselbe wie die Summe aus der Zahl und ${d}.<br>Wie heißt die Zahl? Stelle eine Gleichung auf und löse sie. ${FV}`,
+            expect: x, traps: [{ v: -x, tag: 'E_teilen' }, { v: (c + d) / (k + 1), tag: 'E_umformung' }], chkEq: `${c}-${k}x=x+${d}`,
+            hint: `Zum Beispiel mit x: ${c} − ${k}x = x + ${d}. Bringe alle x auf eine Seite.`,
+            solution: `zum Beispiel ${fm(`${c}-${k}x=x+${d}`)}, also ${fm(`${c - d}=${k + 1}x`)}: ${m(x)}` }); }
+      }
+    }
+    return T;
+  }
+
+  // ---------- Prüfen ----------
+  // Variablen umbenennen
+  function rename(n, map) {
+    if ('num' in n) return n;
+    if ('v' in n) return { v: map[n.v] || n.v };
+    const o = { op: n.op, a: rename(n.a, map) }; if (n.b) o.b = rename(n.b, map); return o;
+  }
+  function perms(arr) { if (arr.length <= 1) return [arr]; return arr.flatMap((x, i) => perms(arr.slice(0, i).concat(arr.slice(i + 1))).map(r => [x].concat(r))); }
+  // gleich bis auf die Wahl der Buchstaben?
+  function equivFree(t, target) {
+    const vs = [...varsOf(t)], vt = [...varsOf(target)];
+    if (vs.length !== vt.length) return false;
+    if (vs.length > 3) return equiv(t, target);
+    return perms(vt).some(pm => { const map = {}; vs.forEach((v, i) => map[v] = pm[i] + '_'); const tt = rename(t, map); const mp = {}; vt.forEach(v => mp[v] = v + '_'); return equiv(tt, rename(target, mp)); });
+  }
+  function checkTerm(input, expect, traps, simplify, free) {
+    let t; try { t = parse(input); } catch (e) { return { invalid: 'Das kann ich nicht lesen. Prüfe Rechenzeichen und Klammern.' }; }
+    const same = free ? equivFree : equiv;
+    const ex = parse(expect);
+    if (free && varsOf(t).size === 0) return { invalid: 'Dein Term braucht eine Variable, zum Beispiel x.' };
+    if (same(t, ex)) {
+      if (simplify && !isSimplified(input, simplify)) return { invalid: 'Das stimmt, ist aber noch nicht fertig vereinfacht. Fasse weiter zusammen.' };
+      return { ok: true };
+    }
+    for (const tr of traps || []) { try { if (same(t, parse(tr.e))) return { ok: false, tag: tr.tag }; } catch (e) { } }
+    return { ok: false };
+  }
+  function check(task, ans) {
+    switch (task.type) {
+      case 'term': return checkTerm(ans, task.expect, task.traps, task.simplify, task.free);
+      case 'num': {
+        let v; try { v = numVal(ans); } catch (e) { return { invalid: 'Gib eine Zahl ein, zum Beispiel 7 oder −3.' }; }
+        if (Math.abs(v - task.expect) < 1e-9) return { ok: true };
+        const tr = (task.traps || []).find(t => Math.abs(t.v - v) < 1e-9); return { ok: false, tag: tr && tr.tag };
+      }
+      case 'mc': return ans === task.correct ? { ok: true } : { ok: false, tag: task.optTags[ans] };
+      case 'multi': {
+        const set = new Set(ans); const good = task.correctSet.every(i => set.has(i)) && set.size === task.correctSet.length;
+        if (good) return { ok: true };
+        const wrong = [...set].map(i => task.optTags[i]).find(Boolean); return { ok: false, tag: wrong };
+      }
+      case 'table': {
+        const vals = []; for (const a of ans) { try { vals.push(numVal(a)); } catch (e) { return { invalid: 'Fülle alle Felder mit Zahlen aus.' }; } }
+        const ok = vals.every((v, i) => Math.abs(v - task.expect[i]) < 1e-9);
+        if (ok) return { ok: true };
+        const negWrong = vals[0] !== task.expect[0]; return { ok: false, tag: negWrong ? 'B_vorzeichen' : null, partial: vals.map((v, i) => Math.abs(v - task.expect[i]) < 1e-9) };
+      }
+      case 'pair': {
+        const res = ans.map((a, i) => {
+          if (task.kinds && task.kinds[i] === 'num') {
+            let v; try { v = numVal(a); } catch (e) { return { invalid: 'Gib beim Wert nur eine Zahl ein.' }; }
+            if (Math.abs(v - task.expect[i]) < 1e-9) return { ok: true };
+            const tr = (task.traps[i] || []).find(t => Math.abs(t.v - v) < 1e-9); return { ok: false, tag: tr && tr.tag };
+          }
+          return checkTerm(a, task.expect[i], task.traps[i], task.simplify[i], task.free);
+        });
+        const inv = res.find(r => r.invalid); if (inv) return inv;
+        if (res.every(r => r.ok)) return { ok: true };
+        return { ok: false, tag: (res.find(r => r.tag) || {}).tag, partial: res.map(r => !!r.ok) };
+      }
+    }
+  }
+
+  const API = { equivFree, rename, rng, parse, evalT, equiv, normalize, termCount, isSimplified, numVal, fm, makeTasks, check, AREAS, TAGS, LEVELS, ampel };
+  if (typeof module !== 'undefined' && module.exports) module.exports = API; else G.Engine = API;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+(function () {
+  'use strict';
+  const E = window.Engine;
+  const KEY = 'packstation-8d-v1';
+  const AREAS = E.AREAS;
+  const HALLS = AREAS.map(a => a.id); // A..E
+  const $ = s => document.querySelector(s);
+  const app = $('#app');
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  let S = null, TASKS = [];
+  function fresh(name, level) {
+    const seed = (Date.now() ^ Math.floor(Math.random() * 1e9)) >>> 0;
+    const R = E.rng(seed ^ 0x5bd1e995);
+    const digits = {}; HALLS.forEach(h => digits[h] = R.int(1, 9));
+    return { v: 2, seed, name, level, hallLevel: {}, padOnly: true, startedAt: Date.now(), finishedAt: null, screen: 'map', hall: null, idx: 0, res: {}, digits, got: {}, escaped: false, bonusDone: false };
+  }
+  function load() { try { const raw = localStorage.getItem(KEY); const o = raw ? JSON.parse(raw) : null; return o && o.v === 2 ? o : null; } catch (e) { return null; } }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } }
+  function wipe() { try { localStorage.removeItem(KEY); } catch (e) { } }
+  function boot(state) { S = state; TASKS = E.makeTasks(S.seed); }
+  const lvlOf = h => h === 'X' ? 0 : (S.hallLevel[h] || S.level);
+  const tasksOf = h => TASKS.filter(t => t.area === h && t.level === lvlOf(h));
+  const LV = E.LEVELS;
+  function levelCards(cur, idp) {
+    return `<div class="levels" role="group" aria-label="Schwierigkeitsstufe">${[1, 2, 3].map(l => `<button type="button" class="lvl" id="${idp}${l}" data-lvl="${l}" aria-pressed="${cur === l}"><span class="st">${LV[l].short}</span><span class="nm">${LV[l].name}</span><span class="boxes">${[1, 2, 3].map(i => `<span class="${i <= l ? 'on' : ''}"></span>`).join('')}</span><span class="ds">${LV[l].desc}</span></button>`).join('')}</div>`;
+  }
+  function wireLevels(onPick) { app.querySelectorAll('.lvl').forEach(b => b.addEventListener('click', () => { app.querySelectorAll('.lvl').forEach(x => x.setAttribute('aria-pressed', 'false')); b.setAttribute('aria-pressed', 'true'); onPick(+b.dataset.lvl); })); }
+  const hallDone = h => tasksOf(h).every(t => S.res[t.id] && S.res[t.id].done);
+  const unlockedCount = () => { let n = 0; for (const h of HALLS) { if (hallDone(h)) n++; else break; } return n; };
+  const minutes = () => Math.max(1, Math.round(((S.finishedAt || Date.now()) - S.startedAt) / 60000));
+
+  // ---------- Bausteine ----------
+  function bar() {
+    const d = HALLS.map(h => `<div class="d ${S.got[h] ? 'on' : ''}" title="Halle ${h}">${S.got[h] ? S.digits[h] : ''}</div>`).join('');
+    const lv = S.screen === 'hall' && S.hall !== 'X' ? lvlOf(S.hall) : S.level;
+    return `<div class="bar"><div class="row" style="gap:10px"><div class="who">Schicht 8d · ${esc(S.name)} · ${minutes()} min</div><span class="lvlchip">${LV[lv] ? LV[lv].short + ' · ' + LV[lv].name : 'Bonus'}</span></div>
+      <div class="codezettel" aria-label="Codezettel"><span class="lbl">Code</span>${d}</div></div>`;
+  }
+  function stackSVG(d, s) {
+    const B = 16, G = 3, figs = [1, 2, 3];
+    const w = figs.reduce((acc, n) => acc + Math.max(d, s) * (B + G) + 34, 0);
+    const h = (3 + 1) * (B + G) + 28;
+    let x = 10, out = '';
+    figs.forEach(n => {
+      const cols = Math.max(d, s), fw = cols * (B + G);
+      for (let i = 0; i < s; i++) out += `<rect x="${x + i * (B + G)}" y="${h - 22 - B}" width="${B}" height="${B}" rx="2" fill="#f6ecda" stroke="#5c4a35"/>`;
+      for (let r = 0; r < n; r++) for (let c = 0; c < d; c++) out += `<rect x="${x + c * (B + G)}" y="${h - 22 - B - (r + 1) * (B + G)}" width="${B}" height="${B}" rx="2" fill="#c9a774" stroke="#5c4a35"/>`;
+      out += `<text x="${x + fw / 2 - 2}" y="${h - 4}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="#2b2016">Figur ${n}</text>`;
+      x += fw + 34;
+    });
+    return `<svg viewBox="0 0 ${w} ${h}" width="${w}" role="img" aria-label="Kartonstapel Figur 1 bis 3">${out}</svg>`;
+  }
+  function rectSVG(l, w, la, wa) {
+    const lab = s => String(s).replace(/([a-z])/g, '<tspan font-style="italic" font-family="Times New Roman, serif">$1</tspan>') + (/[a-z]/.test(s) ? '' : ' cm');
+    const k = 34, W = l * k, H = w * k;
+    return `<svg viewBox="-40 -10 ${W + 80} ${H + 50}" width="${Math.min(W + 80, 420)}" role="img" aria-label="Rechteck">
+      <rect x="0" y="0" width="${W}" height="${H}" fill="#e9d3aa" stroke="#2b2016" stroke-width="2"/>
+      <text x="${W / 2}" y="${H + 26}" text-anchor="middle" font-size="18" fill="#2b2016">${lab(la)}</text>
+      <text x="-12" y="${H / 2 + 6}" text-anchor="end" font-size="18" fill="#2b2016">${lab(wa)}</text></svg>`;
+  }
+  const KEYS_TERM = ['x', 'y', 'z', 'a', 'b', 'n', '²', '³', '(', ')', '+', '−', '·', ':', ','];
+  const KEYS_NUM = ['−', ','];
+  const DIGITS = ['7', '8', '9', '4', '5', '6', '1', '2', '3', '0'];
+  function keypad(syms) {
+    const k = c => `<button type="button" class="key" data-key="${c}" aria-label="${c === '⌫' ? 'Löschen' : c}">${c}</button>`;
+    return `<div class="keypad" aria-label="Tastenfeld"><div class="padwrap">
+      <div class="digits">${DIGITS.map(k).join('')}${k('⌫')}<button type="button" class="key" data-key="CLR" aria-label="Feld leeren">C</button></div>
+      <div class="syms">${syms.map(k).join('')}</div></div>
+      <button type="button" class="devkbd" id="devKbd">${S.padOnly ? 'Geräte-Tastatur einblenden' : 'Nur Bildschirmtasten verwenden'}</button></div>`;
+  }
+
+  // ---------- Bildschirme ----------
+  function renderStart() {
+    const saved = load();
+    const canResume = saved && saved.name && !saved.finishedAt;
+    app.innerHTML = `
+      <div class="hazard"></div>
+      <div class="space"></div>
+      <h1 class="sign">Eingeschlossen<span>in der Packstation</span></h1>
+      <div class="start-grid">
+        <div class="panel">
+          <p class="lead" style="margin-top:0">Du hast nach Schichtende in der Packstation „Verpackte Zahlen“ die Zeit vergessen. Jetzt sind alle Tore zu. Jedes Tor hat ein Zahlenschloss, und der Code steckt in den Aufträgen der Hallen.</p>
+          <p class="lead">Löse in jeder Halle vier Aufträge. Dann öffnet sich das Tor und du bekommst eine Ziffer für den Ausgangscode.</p>
+          <form id="startForm" autocomplete="off" style="margin-top:14px;display:grid;gap:14px">
+            <div><label class="f" for="nameIn">Dein Vorname</label>
+              <input class="txt" id="nameIn" maxlength="24" placeholder="z. B. Mila" autocomplete="off" autocorrect="off" spellcheck="false" required></div>
+            <div><div class="f" style="font-family:var(--f-mono);font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px">Wähle deine Stufe</div>
+              ${levelCards(0, 'sl')}
+              <p class="muted" style="font-size:14px;margin:8px 0 0">Nach jedem Tor kannst du die Stufe wechseln.</p></div>
+            <div id="startMsg" aria-live="polite"></div>
+            <div><button class="btn" type="submit">Schicht beginnen</button></div>
+          </form>
+          ${canResume ? `<div class="space"></div><button class="btn ghost" id="resume">Weiterspielen als ${esc(saved.name)}</button>` : ''}
+        </div>
+        <div class="panel rules">
+          <div class="mono" style="color:var(--hazard);font-size:12px;letter-spacing:.1em">SCHICHTREGELN</div>
+          <div><b>Allein spielen.</b> Am Ende bekommst du eine Auswertung nur für dich.</div>
+          <div><b>Drei Stufen.</b> Wähle ehrlich. Grün auf Stufe 1 gibt es nicht: Dort kannst du höchstens Gelb erreichen.</div>
+          <div><b>Drei Versuche pro Auftrag.</b> Danach siehst du die Lösung und es geht weiter.</div>
+          <div><b>Tipps gibt es jederzeit.</b> Ein Tipp kostet einen Punkt, hilft aber.</div>
+          <div><b>Rechne im Heft mit.</b> Schreib dir Zwischenschritte auf.</div>
+          <div><b>Zahlen sind zufällig.</b> Dein Nachbar hat andere Aufgaben.</div>
+        </div>
+      </div>
+      <details class="teacher"><summary>Für die Lehrkraft</summary>
+        <ol>
+          <li>Ersetzt den Diagnose-Check in DS 1. Inhalte aus Klasse 7: Terme aufstellen (A), Einsetzen (B), Zusammenfassen (C), Produkte vereinfachen (D), Gleichungen lösen (E). Die Hallen passen zu den Lerntheke-Stationen A–E.</li>
+          <li>Ablauf: 10 min Einstieg, ca. 40–55 min Escape-Room, 10 min Auswertung auf den Laufzettel übertragen, Rest Start der Lerntheke. Schnelle SuS gehen danach ins freiwillige Chefbüro.</li>
+          <li>Drei Stufen: 1 Aushilfe (Grundaufgaben, nur positive Zahlen bis auf eine Ausnahme), 2 Lagerprofi (Niveau des Diagnose-Checks), 3 Schichtleitung (Klammern, negative Lösungen, Quader, Zahlenrätsel mit x auf beiden Seiten). Die SuS wählen zu Beginn und können nach jedem Tor wechseln. Eine Halle wird immer komplett auf einer Stufe gespielt.</li>
+          <li>Punkte pro Auftrag: 2 beim ersten Versuch ohne Tipp, 1 mit Tipp oder im 2./3. Versuch, 0 wenn die Lösung angezeigt wurde. Pro Halle sind 8 Punkte möglich. Ampel: Stufe 1: 7–8 gelb, sonst rot · Stufe 2: 7–8 grün, 4–6 gelb, 0–3 rot · Stufe 3: 5–8 grün, 2–4 gelb, 0–1 rot.</li>
+          <li>Der Fortschritt wird nur auf dem jeweiligen Gerät gespeichert. Lassen Sie sich die Auswertung am Ende zeigen oder auf den Laufzettel übertragen.</li>
+        </ol>
+      </details>`;
+    let pick = 0; wireLevels(l => { pick = l; $('#startMsg').innerHTML = ''; });
+    $('#startForm').addEventListener('submit', ev => { ev.preventDefault(); const n = $('#nameIn').value.trim(); if (!n) return;
+      if (!pick) { $('#startMsg').innerHTML = '<div class="msg info"><b>Noch keine Stufe gewählt.</b>Tippe eine der drei Stufen an.</div>'; return; }
+      boot(fresh(n, pick)); save(); render(); });
+    if (canResume) $('#resume').addEventListener('click', () => { boot(saved); render(); });
+  }
+
+  function renderMap() {
+    const u = unlockedCount();
+    const doors = AREAS.map((a, i) => {
+      const done = hallDone(a.id), open = i <= u && !done;
+      const cls = done ? 'done' : open ? 'open' : 'locked';
+      return `<button class="door ${cls}" data-hall="${a.id}" ${cls === 'locked' ? 'disabled aria-disabled="true"' : ''}>
+        <div><div class="hall">Halle ${a.id}</div><div class="nm">${a.hall}</div><div class="tp">${a.topic}</div></div>
+        <div class="lock">${done ? 'gespielt auf ' + LV[S.hallLevel[a.id]].short : open ? 'Tor offen · 4 Aufträge' : 'gesperrt'}</div>
+        ${done ? `<div class="stamp">Ziffer ${S.digits[a.id]}</div>` : ''}</button>`;
+    }).join('');
+    const exitOpen = u >= HALLS.length;
+    app.innerHTML = bar() + `
+      <div class="hallhead"><div class="h"><small>HALLENPLAN</small>Packstation 8d</div></div>
+      <p class="intro">${u === 0 ? 'Beginne in Halle A. Jede gelöste Halle öffnet die nächste.' : exitOpen ? 'Alle Hallen sind offen. Ab zum Ausgang!' : `Weiter geht es in Halle ${HALLS[u]}.`} Du spielst gerade auf <b style="color:var(--fg)">${LV[S.level].short} (${LV[S.level].name})</b>.</p>
+      <div class="plan">${doors}
+        <button class="door exit ${exitOpen ? 'open' : 'locked'}" id="exitDoor" ${exitOpen ? '' : 'disabled aria-disabled="true"'}>
+          <div><div class="hall">Ausgang</div><div class="nm">Haupttor</div><div class="tp">Fünfstelliger Code</div></div>
+          <div class="lock">${exitOpen ? 'Code eingeben' : 'gesperrt'}</div></button>
+      </div>`;
+    app.querySelectorAll('.door[data-hall]').forEach(b => b.addEventListener('click', () => {
+      if (b.classList.contains('locked') || b.classList.contains('done')) return;
+      const h = b.dataset.hall; if (!S.hallLevel[h]) S.hallLevel[h] = S.level; S.screen = 'hall'; S.hall = h; S.idx = tasksOf(h).findIndex(t => !(S.res[t.id] && S.res[t.id].done)); save(); render();
+    }));
+    if (exitOpen) $('#exitDoor').addEventListener('click', () => { S.screen = 'exit'; save(); render(); });
+  }
+
+  // ---------- Aufgabe ----------
+  let sel = null, multiSel = new Set(), lastInput = null, wrongOpts = new Set();
+  function renderHall() {
+    const h = S.hall, list = tasksOf(h), area = h === 'X' ? { id: 'X', hall: 'Chefbüro', topic: 'Bonusaufträge', intro: 'Das Büro des Schichtleiters. Hier liegen die kniffligen Aufträge. Sie zählen nicht zur Ampel, aber jeder gelöste Auftrag ist ein Expertenpunkt.' } : AREAS.find(a => a.id === h);
+    if (S.idx < 0 || S.idx >= list.length) { S.idx = 0; }
+    const t = list[S.idx];
+    const r = S.res[t.id] || (S.res[t.id] = { tries: 0, hint: false, done: false, pts: 0, tags: [] });
+    sel = null; multiSel = new Set(); wrongOpts = new Set();
+    const pips = list.map((x, i) => { const rr = S.res[x.id]; return `<div class="pip ${rr && rr.done ? 'p' + rr.pts : i === S.idx ? 'cur' : ''}"></div>`; }).join('');
+    let ans = '';
+    if (t.type === 'term') ans = `<div class="answer"><input id="in0" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="text" placeholder="Term eingeben" aria-label="Deine Antwort"></div>${keypad(KEYS_TERM)}`;
+    if (t.type === 'num') ans = `<div class="answer">${t.eq ? '<span class="pre"><i>x</i> =</span>' : ''}<input id="in0" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text" placeholder="Zahl eingeben" aria-label="Deine Antwort"></div>${keypad(KEYS_NUM)}`;
+    if (t.type === 'pair') ans = t.labels.map((l, i) => `<div class="answer"><span class="pre">${/^[A-Za-z] =/.test(l) ? l.replace(/^([A-Za-z])/, '<i>$1</i>') : l}</span><input id="in${i}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="${t.kinds && t.kinds[i] === 'num' ? 'Zahl' : 'Term'}" aria-label="${l}"></div>`).join('') + keypad(KEYS_TERM);
+    if (t.type === 'table') ans = `<div style="overflow-x:auto"><table class="tbl"><tr><th><i>x</i></th>${t.xs.map(x => `<th>${String(x).replace('-', '−')}</th>`).join('')}</tr>
+      <tr><th>Wert</th>${t.xs.map((x, i) => `<td><input id="in${i}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Wert für x = ${x}"></td>`).join('')}</tr></table></div>${keypad(KEYS_NUM)}`;
+    if (t.type === 'mc') ans = `<div class="opts">${t.options.map((o, i) => `<button class="opt" data-i="${i}">${o}</button>`).join('')}</div>`;
+    if (t.type === 'multi') ans = `<div class="chips">${t.options.map((o, i) => `<button class="chip" data-i="${i}" aria-pressed="false">${o}</button>`).join('')}</div>`;
+    const visual = t.visual ? `<div class="visual">${t.visual.kind === 'stack' ? stackSVG(t.visual.d, t.visual.s) : rectSVG(t.visual.l, t.visual.w, t.visual.la, t.visual.wa)}</div>` : '';
+    app.innerHTML = bar() + `
+      <div class="hallhead"><div class="h"><small>HALLE ${h === 'X' ? '★' : h} · ${area.topic.toUpperCase()}</small>${area.hall}</div><div class="pips" aria-label="Fortschritt">${pips}</div></div>
+      <p class="intro">${area.intro}</p>
+      <article class="label">
+        <div class="top"><span class="mono">AUFTRAG ${t.id}</span><span class="tries" id="tries">Versuch ${Math.min(r.tries + 1, 3)} von 3</span><span class="barcode" aria-hidden="true"></span></div>
+        <div class="body">
+          <div class="prompt">${t.prompt}</div>
+          ${visual}
+          ${ans}
+          <div id="msg" aria-live="polite"></div>
+          <div class="actions" id="acts">
+            ${t.type !== 'mc' ? '<button class="btn dark" id="checkBtn">Prüfen</button>' : ''}
+            <button class="btn ghost" id="hintBtn" style="color:var(--ink);border-color:var(--ink-soft)">Tipp anzeigen</button>
+            <button class="btn ghost" id="backBtn" style="color:var(--ink-soft);border-color:transparent">Zum Hallenplan</button>
+          </div>
+        </div>
+      </article>`;
+    if (r.hint) showHint(t);
+    app.querySelectorAll('.answer input, .tbl input').forEach(inp => inp.setAttribute('inputmode', S.padOnly ? 'none' : 'text'));
+    const dk = $('#devKbd'); if (dk) dk.addEventListener('click', () => { S.padOnly = !S.padOnly; save(); app.querySelectorAll('.answer input, .tbl input').forEach(inp => inp.setAttribute('inputmode', S.padOnly ? 'none' : 'text')); dk.textContent = S.padOnly ? 'Geräte-Tastatur einblenden' : 'Nur Bildschirmtasten verwenden'; const f = lastInput || $('#in0'); if (f) { f.blur(); f.focus({ preventScroll: true }); } });
+    const first = $('#in0'); if (first) { first.focus({ preventScroll: true }); lastInput = first; }
+    app.querySelectorAll('.answer input, .tbl input').forEach(inp => {
+      inp.addEventListener('focus', () => lastInput = inp);
+      inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); submit(t); } });
+    });
+    app.querySelectorAll('.key').forEach(k => k.addEventListener('mousedown', ev => ev.preventDefault()));
+    app.querySelectorAll('.key').forEach(k => k.addEventListener('click', () => {
+      const inp = lastInput || $('#in0'); if (!inp) return;
+      const v = k.dataset.key; const foc = document.activeElement === inp; const s = foc && inp.selectionStart != null ? inp.selectionStart : inp.value.length, e = foc && inp.selectionEnd != null ? inp.selectionEnd : inp.value.length;
+      if (v === 'CLR') { inp.value = ''; inp.focus({ preventScroll: true }); return; }
+      if (v === '⌫') { if (s === e && s > 0) { inp.value = inp.value.slice(0, s - 1) + inp.value.slice(e); inp.setSelectionRange(s - 1, s - 1); } else { inp.value = inp.value.slice(0, s) + inp.value.slice(e); inp.setSelectionRange(s, s); } }
+      else { inp.value = inp.value.slice(0, s) + v + inp.value.slice(e); inp.setSelectionRange(s + v.length, s + v.length); }
+      inp.focus({ preventScroll: true });
+    }));
+    app.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => { if (b.disabled) return; submit(t, +b.dataset.i); }));
+    app.querySelectorAll('.chip').forEach(b => b.addEventListener('click', () => { const i = +b.dataset.i; if (multiSel.has(i)) multiSel.delete(i); else multiSel.add(i); b.classList.toggle('sel'); b.setAttribute('aria-pressed', multiSel.has(i)); }));
+    const cb = $('#checkBtn'); if (cb) cb.addEventListener('click', () => submit(t));
+    $('#hintBtn').addEventListener('click', () => { r.hint = true; save(); showHint(t); });
+    $('#backBtn').addEventListener('click', () => { S.screen = h === 'X' ? 'report' : 'map'; save(); render(); });
+  }
+  function showHint(t) {
+    const m = $('#msg'); if (!m) return;
+    if (!m.querySelector('.hint')) m.insertAdjacentHTML('afterbegin', `<div class="msg hint"><b>Tipp</b>${t.hint}</div>`);
+    const hb = $('#hintBtn'); if (hb) hb.disabled = true;
+  }
+  function setMsg(kind, title, text) {
+    const m = $('#msg'); const hint = m.querySelector('.hint');
+    m.innerHTML = (hint ? hint.outerHTML : '') + `<div class="msg ${kind}" style="margin-top:${hint ? 8 : 0}px"><b>${title}</b>${text || ''}</div>`;
+  }
+  function collect(t) {
+    if (t.type === 'term' || t.type === 'num') return $('#in0').value;
+    if (t.type === 'pair') return t.labels.map((_, i) => $('#in' + i).value);
+    if (t.type === 'table') return t.xs.map((_, i) => $('#in' + i).value);
+    if (t.type === 'multi') return [...multiSel];
+  }
+  function submit(t, mcIndex) {
+    const r = S.res[t.id]; if (r.done) return;
+    const ans = t.type === 'mc' ? mcIndex : collect(t);
+    if (t.type !== 'mc' && t.type !== 'multi' && [].concat(ans).some(a => !String(a).trim())) { setMsg('info', 'Noch leer', 'Trage zuerst eine Antwort ein.'); return; }
+    if (t.type === 'multi' && !ans.length) { setMsg('info', 'Noch nichts ausgewählt', 'Tippe die passenden Pakete an.'); return; }
+    const res = E.check(t, ans);
+    if (res.invalid) { setMsg('info', 'Nicht lesbar', res.invalid); return; }
+    if (res.ok) {
+      r.done = true; r.pts = (r.tries === 0 && !r.hint) ? 2 : 1; save();
+      if (t.type === 'mc') app.querySelector(`.opt[data-i="${mcIndex}"]`).classList.add('good');
+      app.querySelectorAll('.answer input, .tbl input').forEach(i => { i.classList.add('right'); i.readOnly = true; });
+      setMsg('ok', r.pts === 2 ? 'Richtig! 2 Punkte.' : 'Richtig! 1 Punkt.', `Lösung: ${t.solution}`);
+      nextButton();
+      return;
+    }
+    r.tries++;
+    if (res.tag && !r.tags.includes(res.tag)) r.tags.push(res.tag);
+    if (t.type === 'mc') { const b = app.querySelector(`.opt[data-i="${mcIndex}"]`); b.classList.add('bad'); b.disabled = true; }
+    if (res.partial) app.querySelectorAll('.answer input, .tbl input').forEach((i, k) => { i.classList.toggle('wrong', !res.partial[k]); i.classList.toggle('right', !!res.partial[k]); });
+    else app.querySelectorAll('.answer input').forEach(i => i.classList.add('wrong'));
+    if (r.tries >= 3) {
+      r.done = true; r.pts = 0; save();
+      setMsg('no', 'Diesmal nicht geschafft.', `So geht es: ${t.solution}${res.tag ? `<br><br>${E.TAGS[res.tag]}` : ''}`);
+      app.querySelectorAll('.opt').forEach(b => b.disabled = true);
+      nextButton();
+    } else {
+      save();
+      $('#tries').textContent = `Versuch ${r.tries + 1} von 3`;
+      setMsg('no', 'Noch nicht richtig.', res.tag ? E.TAGS[res.tag] : (r.hint ? 'Lies den Tipp noch einmal genau und rechne Schritt für Schritt im Heft.' : 'Rechne noch einmal nach. Wenn du feststeckst, hol dir einen Tipp.'));
+    }
+  }
+  function nextButton() {
+    const acts = $('#acts'); acts.innerHTML = '<button class="btn" id="nextBtn">Weiter</button>';
+    const b = $('#nextBtn'); b.focus({ preventScroll: true });
+    b.addEventListener('click', () => {
+      const list = tasksOf(S.hall);
+      const nxt = list.findIndex(x => !(S.res[x.id] && S.res[x.id].done));
+      if (nxt === -1) {
+        if (S.hall === 'X') { S.bonusDone = true; S.screen = 'report'; }
+        else { S.got[S.hall] = true; S.screen = 'gate'; }
+      } else S.idx = nxt;
+      save(); render();
+    });
+  }
+
+  function renderGate() {
+    const h = S.hall, a = AREAS.find(x => x.id === h), lv = lvlOf(h);
+    const pts = tasksOf(h).reduce((s, t) => s + (S.res[t.id] ? S.res[t.id].pts : 0), 0);
+    app.innerHTML = bar() + `<div class="panel reveal">
+      <div class="mono" style="color:var(--hazard);font-size:12px;letter-spacing:.12em">TOR ${h} · ${a.hall.toUpperCase()}</div>
+      <h2 class="sign" style="font-size:clamp(26px,5vw,40px)">Das Tor ist offen!</h2>
+      <p class="muted" style="margin:0">Auf der Innenseite des Rolltors klebt ein Etikett mit einer Ziffer. Sie steht jetzt auf deinem Codezettel.</p>
+      <div class="bigdigit" aria-label="Ziffer ${S.digits[h]}">${S.digits[h]}</div>
+      <p class="muted" style="margin:0">${pts} von 8 Punkten auf ${LV[lv].short}.</p>
+      ${h === 'E' ? '' : `<p class="suggest" style="margin:6px 0 0">${pts >= 7 && lv < 3 ? `Das lief richtig gut. Trau dir in der nächsten Halle <b>${LV[lv + 1].short}</b> zu.` : pts <= 3 && lv > 1 ? `Das war schwer. In der nächsten Halle hilft dir vielleicht <b>${LV[lv - 1].short}</b>.` : 'Wähle die Stufe für die nächste Halle.'}</p>
+      ${levelCards(S.level, 'gl')}`}
+      <button class="btn" id="goMap">${h === 'E' ? 'Zum Ausgang' : 'Weiter zum Hallenplan'}</button></div>`;
+    if (h !== 'E') wireLevels(l => { S.level = l; save(); });
+    $('#goMap').addEventListener('click', () => { S.screen = h === 'E' ? 'exit' : 'map'; save(); render(); });
+  }
+
+  function renderExit() {
+    app.innerHTML = bar() + `<div class="panel reveal">
+      <div class="hazard" style="width:100%"></div>
+      <h2 class="sign" style="font-size:clamp(26px,5vw,40px)">Haupttor</h2>
+      <p style="margin:0;max-width:52ch">Das Schloss will alle fünf Ziffern von deinem Codezettel, in der Reihenfolge der Hallen <b>A bis E</b>.</p>
+      <form id="vaultForm" autocomplete="off" style="display:grid;gap:14px;justify-items:center">
+        <div class="vault">${HALLS.map((h, i) => `<label><input id="v${i}" inputmode="numeric" maxlength="1" aria-label="Ziffer Halle ${h}"><span class="cap">${h}</span></label>`).join('')}</div>
+        <button class="btn" type="submit">Tor öffnen</button>
+      </form>
+      <div id="vmsg" aria-live="polite"></div></div>`;
+    const ins = HALLS.map((_, i) => $('#v' + i));
+    ins[0].focus({ preventScroll: true });
+    ins.forEach((inp, i) => inp.addEventListener('input', () => { inp.value = inp.value.replace(/\D/g, '').slice(-1); if (inp.value && ins[i + 1]) ins[i + 1].focus(); }));
+    $('#vaultForm').addEventListener('submit', ev => {
+      ev.preventDefault();
+      const code = ins.map(i => i.value).join(''), want = HALLS.map(h => S.digits[h]).join('');
+      if (code === want) { S.escaped = true; S.finishedAt = S.finishedAt || Date.now(); S.screen = 'report'; save(); render(); }
+      else $('#vmsg').innerHTML = '<div class="msg no" style="text-align:left"><b>Das Schloss klickt nicht.</b>Schau auf deinen Codezettel oben rechts und achte auf die Reihenfolge A bis E.</div>';
+    });
+  }
+
+  // ---------- Auswertung ----------
+  const AREA_TIPS = {
+    A: 'Übersetze Schritt für Schritt und probiere die Anweisung zuerst mit einer echten Zahl aus.',
+    B: 'Setze negative Zahlen immer in Klammern ein und rechne erst Potenzen, dann Punkt vor Strich.',
+    C: 'Fasse nur Glieder mit derselben Variablen und derselben Hochzahl zusammen.',
+    D: 'Multipliziere die Zahlen, schreibe die Variablen dahinter und denk an x · x = x².',
+    E: 'Mache auf beiden Seiten dasselbe und prüfe dein Ergebnis mit der Probe.',
+  };
+  const STRENGTH = {
+    A: 'Du übersetzt Texte und Situationen sicher in Terme.', B: 'Du setzt sicher ein, auch negative Zahlen.', C: 'Du erkennst gleichartige Glieder und fasst sicher zusammen.',
+    D: 'Du vereinfachst Produkte sicher.', E: 'Du löst Gleichungen sicher.',
+  };
+  function areaResult(h) {
+    const pts = tasksOf(h).reduce((s, t) => s + (S.res[t.id] ? S.res[t.id].pts : 0), 0);
+    const lv = lvlOf(h); const level = E.ampel(lv, pts);
+    const tags = [...new Set(tasksOf(h).flatMap(t => (S.res[t.id] && S.res[t.id].tags) || []))];
+    return { pts, level, tags, lv };
+  }
+  function renderReport() {
+    const res = AREAS.map(a => ({ a, ...areaResult(a.id) }));
+    const must = res.filter(r => r.level !== 'gruen');
+    const word = { gruen: 'grün', gelb: 'gelb', rot: 'rot' };
+    const todo = { gruen: 'Station %: nur die Expertenaufgabe', gelb: 'Station %: Standard ist Pflicht', rot: 'Station %: Basis und Standard sind Pflicht' };
+    const bonus = tasksOf('X'), bonusPts = bonus.filter(t => S.res[t.id] && S.res[t.id].done && S.res[t.id].pts > 0).length;
+    const cards = res.map(r => `<div class="acard">
+        <div class="lamp ${r.level}" aria-label="Ampel ${word[r.level]}"><i></i><i></i><i></i></div>
+        <div><div class="meta">Halle ${r.a.id} · ${LV[r.lv].short} · ${r.pts} von 8 Punkten</div><h3>${r.a.topic}</h3>
+          <p>${r.level === 'gruen' ? STRENGTH[r.a.id] : r.lv === 1 && r.pts >= 7 ? 'Die Grundaufgaben sitzen. Für Grün brauchst du Stufe 2 oder 3, deshalb ist an der Lerntheke Standard dran.' : r.level === 'gelb' ? 'Vieles klappt schon. ' + AREA_TIPS[r.a.id] : 'Hier brauchst du noch Übung. ' + AREA_TIPS[r.a.id]}</p>
+          ${r.tags.length ? `<p class="muted" style="margin-top:8px">${r.level === 'gruen' ? 'Achte trotzdem darauf:' : 'Das ist dir passiert:'}</p><ul>${r.tags.map(tg => `<li>${E.TAGS[tg]}</li>`).join('')}</ul>` : ''}
+          <span class="todo">→ ${todo[r.level].replace('%', r.a.station)}</span></div></div>`).join('');
+    const code = res.map(r => `${r.a.id} ${word[r.level]} (St. ${r.lv})`).join(' · ');
+    app.innerHTML = bar() + `
+      <div class="report-head">
+        <div class="mono" style="color:var(--ok);font-size:12px;letter-spacing:.12em">${S.escaped ? 'AUSGEBROCHEN' : 'ZWISCHENSTAND'} · ${minutes()} ${minutes() === 1 ? 'MINUTE' : 'MINUTEN'}</div>
+        <h2 class="sign" style="font-size:clamp(26px,5vw,42px)">Geschafft, ${esc(S.name)}!</h2>
+        <p class="lead" style="margin:0">Hier ist deine persönliche Auswertung. Die Ampeln zeigen dir, welche Stationen der Lerntheke für dich Pflicht sind.</p>
+      </div>
+      <div class="cards">${cards}</div>
+      <div class="laufzettel">
+        <div class="mono" style="font-size:12px;letter-spacing:.1em">FÜR DEINEN LAUFZETTEL</div>
+        <div class="code">${code}</div>
+        <div>${must.length ? `Deine Pflichtstationen: <b>${must.map(r => r.a.station).join(', ')}</b>. Beginne mit ${(res.find(r => r.level === 'rot') || must[0]).a.station}.` : 'Alle Ampeln sind grün. An der Lerntheke machst du die Expertenaufgaben und kannst als Experte helfen.'}</div>
+        ${S.bonusDone ? `<div>Chefbüro: ${bonusPts} von 4 Expertenaufträgen gelöst.</div>` : ''}
+      </div>
+      <div class="space"></div>
+      <div class="row">
+        ${S.bonusDone ? '' : '<button class="btn" id="bonusBtn">Noch Zeit? Ab ins Chefbüro</button>'}
+        <span class="confirm" id="restartWrap"><button class="btn ghost" id="restartBtn">Neu starten</button></span>
+      </div>`;
+    const bb = $('#bonusBtn'); if (bb) bb.addEventListener('click', () => { S.screen = 'hall'; S.hall = 'X'; S.idx = tasksOf('X').findIndex(t => !(S.res[t.id] && S.res[t.id].done)); save(); render(); });
+    $('#restartBtn').addEventListener('click', () => {
+      $('#restartWrap').innerHTML = '<span class="muted">Deine Auswertung wird gelöscht.</span><button class="btn ghost" id="yes">Ja, neu starten</button><button class="btn ghost" id="no">Abbrechen</button>';
+      $('#yes').addEventListener('click', () => { wipe(); S = null; renderStart(); });
+      $('#no').addEventListener('click', () => render());
+    });
+  }
+
+  function render() {
+    if (!S) return renderStart();
+    window.scrollTo({ top: 0 });
+    ({ map: renderMap, hall: renderHall, gate: renderGate, exit: renderExit, report: renderReport }[S.screen] || renderMap)();
+  }
+
+  // Minutenanzeige aktualisieren
+  setInterval(() => { const w = document.querySelector('.bar .who'); if (w && S) w.textContent = `Schicht 8d · ${S.name} · ${minutes()} min`; }, 30000);
+
+  function start(data) {
+    if (data && data.state) boot(data.state);
+    render();
+  }
+  if (window.claude && window.claude.hot && window.claude.hot.snapshot) window.claude.hot.snapshot(() => ({ state: S }));
+  if (window.claude && window.claude.hot && window.claude.hot.ready) window.claude.hot.ready(start); else start((window.claude && window.claude.hot && window.claude.hot.data) || {});
+})();
+</script>
