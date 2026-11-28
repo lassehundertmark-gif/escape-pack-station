@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Packstation Termtraining</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bungee&display=swap">
+<style>
+:root{
+  --bg:#f3ece0; --card:#fffaf1; --ink:#2b2016; --soft:#6b5a45; --kraft:#dcc196; --kraft2:#c9a774;
+  --night:#1a1f25; --hazard:#f2c230; --blue:#2f6fa8; --red:#c4422e; --green:#2f7d4a; --line:#e2d4bb; --lock:#ece3d3;
+  --display:'Bungee','Arial Black',sans-serif; --body:'Atkinson Hyperlegible',Verdana,sans-serif; color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#171b20; --card:#222830; --ink:#ece6db; --soft:#a9b2bc; --kraft:#6e5a3c; --kraft2:#8a7048;
+  --night:#0f1216; --hazard:#f2c230; --blue:#7fb2e5; --red:#ec7a64; --green:#7fcf98; --line:#343c47; --lock:#1d2229; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#171b20; --card:#222830; --ink:#ece6db; --soft:#a9b2bc; --kraft:#6e5a3c; --kraft2:#8a7048;
+  --night:#0f1216; --hazard:#f2c230; --blue:#7fb2e5; --red:#ec7a64; --green:#7fcf98; --line:#343c47; --lock:#1d2229; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.5;margin:0}
+.top{background:var(--night);color:#ece6db}
+.stripe{height:10px;background:repeating-linear-gradient(-45deg,var(--hazard) 0 12px,#111 12px 24px)}
+.wrap{max-width:820px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top .wrap{padding-block:22px 26px}
+.eyebrow{font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:#a3acb6;font-weight:700}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(28px,6vw,42px);line-height:1.1;margin:6px 0 10px;color:var(--hazard);text-wrap:balance}
+.top p{margin:0;max-width:62ch;color:#d9d2c6}
+main .wrap{padding-block:24px 48px;display:flex;flex-direction:column;gap:24px}
+h2{margin:0;font-size:22px;text-wrap:balance}
+.lockers{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+.locker{all:unset;box-sizing:border-box;cursor:pointer;background:var(--card);border:2px solid var(--line);border-radius:10px;padding:14px 16px 18px;display:flex;flex-direction:column;gap:10px;min-height:150px;position:relative}
+.locker:hover{border-color:var(--kraft2)}
+.locker:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.locker .fach{display:flex;justify-content:space-between;align-items:center;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);font-weight:700}
+.locker .led{width:12px;height:12px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px color-mix(in srgb,var(--green) 25%,transparent)}
+.locker .name{font-family:var(--display);font-size:19px;line-height:1.2}
+.locker .ex{margin-top:auto;font-size:16px;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.locker.closed{background:var(--lock);border-style:dashed;cursor:not-allowed;color:var(--soft)}
+.locker.closed .led{background:var(--red);box-shadow:0 0 0 3px color-mix(in srgb,var(--red) 25%,transparent)}
+.locker.closed .ex{font-weight:700}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.btn{font:inherit;font-weight:700;color:var(--ink);background:var(--card);border:2px solid var(--line);border-radius:8px;padding:10px 16px;cursor:pointer;min-height:44px}
+.btn.main{background:var(--hazard);color:#2b2016;border-color:#2b2016}
+.btn:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.how{background:var(--card);border-left:6px solid var(--kraft2);border-radius:6px;padding:12px 16px;display:flex;flex-direction:column;gap:6px}
+.how p{margin:0;max-width:64ch}
+.tasks{display:flex;flex-direction:column;gap:16px}
+.task{background:var(--card);border:2px solid var(--line);border-radius:10px;overflow:hidden}
+.task .label{display:flex;align-items:center;gap:12px;background:var(--kraft);padding:8px 16px;font-weight:700}
+.task .label .no{font-family:var(--display);font-weight:400}
+.bars{display:inline-flex;gap:3px;align-items:flex-end}
+.bars i{display:block;width:7px;border-radius:1px;background:var(--ink)}
+.bars i:nth-child(1){height:10px}.bars i:nth-child(2){height:14px}.bars i:nth-child(3){height:18px}
+.bars i.off{opacity:.2}
+.task .lvl{margin-left:auto;font-size:15px;font-weight:400}
+.task .inner{padding:14px 16px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.task .inner p{margin:0}
+.math{font-size:22px;white-space:pre;overflow-x:auto;background:var(--bg);border-radius:6px;padding:8px 12px;font-variant-numeric:tabular-nums}
+.sol{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.sol .tag{font-size:14px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--green)}
+.sol .math{border:2px solid var(--green);background:transparent}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;font-size:.8em;line-height:1.05;margin:0 2px}
+.fr span:first-child{border-bottom:2px solid currentColor;padding:0 3px}
+.foot{color:var(--soft);font-size:15px;border-top:2px solid var(--line);padding-top:14px}
+</style>
+</head>
+<body>
+<header class="top"><div class="stripe"></div><div class="wrap">
+  <div class="eyebrow">Mathematik 8 · Terme und Gleichungen</div>
+  <h1>Packstation Termtraining</h1>
+  <p>Wähle ein Fach. Du bekommst drei neue Aufgaben, eine auf jedem Niveau. Rechne in deinem digitalen Heft.</p>
+</div></header>
+<main><div class="wrap" id="app"></div></main>
+<script>
+// ===== Termtraining-Engine =====
+const R = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const nz = (a, b) => { let v; do v = R(a, b); while (v === 0); return v; };
+const gcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) [a, b] = [b, a % b]; return a; };
+const M = '−';
+// --- Polynome in einer Variablen: Array [c0, c1, c2]
+const padd = (P, Q) => { const r = []; for (let i = 0; i < Math.max(P.length, Q.length); i++) r[i] = (P[i] || 0) + (Q[i] || 0); return r; };
+const pscale = (P, k) => P.map(c => c * k);
+const pmul = (P, Q) => { const r = Array(P.length + Q.length - 1).fill(0); P.forEach((a, i) => Q.forEach((b, j) => r[i + j] += a * b)); return r; };
+// --- Formatierung
+const coefStr = (c, v) => (c === 1 ? '' : c === -1 ? M : (c < 0 ? M + (-c) : '' + c)) + v;
+function lin(p, a, v, constFirst) { // Ausdruck p·v + a
+  const P = [a, p];
+  let s;
+  if (constFirst && a !== 0) s = (a < 0 ? M + (-a) : '' + a) + (p < 0 ? ' ' + M + ' ' : ' + ') + coefStr(Math.abs(p), v);
+  else s = coefStr(p, v) + (a === 0 ? '' : (a < 0 ? ' ' + M + ' ' + (-a) : ' + ' + a));
+  return { s, P };
+}
+const br = X => ({ s: '(' + X.s + ')', P: X.P });
+const kmul = (k, X) => ({ s: (k === -1 ? M : k < 0 ? M + (-k) : k === 1 ? '' : k) + (k === 1 || k === -1 ? '' : ' · ') + '(' + X.s + ')', P: pscale(X.P, k) });
+const prod = (X, Y) => ({ s: '(' + X.s + ') · (' + Y.s + ')', P: pmul(X.P, Y.P) });
+const sqr = X => ({ s: '(' + X.s + ')²', P: pmul(X.P, X.P) });
+const mono = (c, deg, v) => ({ s: deg === 0 ? '' + Math.abs(c) : coefStr(Math.abs(c), deg === 2 ? v + '²' : v), neg: c < 0, P: deg === 0 ? [c] : deg === 1 ? [0, c] : [0, 0, c] });
+// Summe aus Teilen; jeder Teil {s, P, neg} – neg bedeutet: mit Minus angehängt
+function sum(parts) {
+  let s = '', P = [0];
+  parts.forEach((t, i) => {
+    const neg = !!t.neg;
+    if (i === 0) s += (neg ? M : '') + t.s; else s += (neg ? ' ' + M + ' ' : ' + ') + t.s;
+    P = padd(P, neg && t.isMono ? t.P : neg ? pscale(t.P, -1) : t.P);
+  });
+  return { s, P };
+}
+const M2 = (c, deg, v) => { const m = mono(c, deg, v); m.isMono = true; return m; };
+const sub = X => ({ s: X.s, P: X.P, neg: true });
+// --- Rationale Lösung
+function solveLin(L, Rr) {
+  const D = padd(L, pscale(Rr, -1));
+  if (Math.abs(D[2] || 0) > 1e-9) return null;
+  const a = D[1] || 0, b = D[0] || 0;
+  if (a === 0) return null;
+  let num = -b, den = a; if (den < 0) { num = -num; den = -den; }
+  const g = gcd(num, den) || 1; return { num: num / g, den: den / g };
+}
+const fracStr = f => f.den === 1 ? (f.num < 0 ? M + (-f.num) : '' + f.num) : (f.num < 0 ? M : '') + Math.abs(f.num) + '/' + f.den;
+const VARS = ['x', 'x', 'x', 'y', 'z', 'a', 't'];
+
+// Gleichung zusammensetzen: lhs, rhsRest (ohne Konstante), Ziel-Lösung -> Konstante rechts bestimmen
+function finish(lhs, rhsParts, v, level, extraConst) {
+  // rhs = rhsParts + c ; c so gewählt, dass Lösung zulässig ist
+  for (let tries = 0; tries < 60; tries++) {
+    let c;
+    if (level < 3) {
+      const s = nz(-8, 9);
+      const restP = rhsParts.length ? sum(rhsParts).P : [0];
+      const val = P => P.reduce((acc, co, i) => acc + co * s ** i, 0);
+      c = val(lhs.P) - val(restP);
+    } else c = nz(-30, 30);
+    const parts = rhsParts.slice();
+    if (c !== 0) parts.push(M2(c, 0, v)); else if (!parts.length) parts.push(M2(0, 0, v));
+    const rhs = sum(parts);
+    const sol = solveLin(lhs.P, rhs.P);
+    if (!sol) continue;
+    if (level < 3 && sol.den !== 1) continue;
+    if (level === 3 && (sol.den === 1 || sol.den > 6 || Math.abs(sol.num / sol.den) > 12)) continue;
+    if (Math.abs(c) > 99) continue;
+    return { text: lhs.s + ' = ' + rhs.s, sol, v, eq: true };
+  }
+  return null;
+}
+
+const GEN = {
+  aufloesen: [
+    () => { const v = pick(VARS); const t = R(0, 1);
+      if (t === 0) { const k = R(2, 7); return finish(kmul(k, lin(1, nz(-9, 9), v)), [], v, 1); }
+      const k = R(2, 6); let m; do m = R(-4, 6); while (m === k);
+      return finish(kmul(k, lin(1, nz(-9, 9), v)), m ? [M2(m, 1, v)] : [], v, 1); },
+    () => { const v = pick(VARS); const t = R(0, 1);
+      if (t === 0) { const k = R(2, 6), m = R(2, 5), p = R(1, 4), q = R(1, 4); if (k * p - m * q === 0) return null;
+        return finish(sum([kmul(k, lin(p, nz(-9, 9), v)), sub(kmul(m, lin(q, nz(-9, 9), v)))]), [], v, 2); }
+      const a = R(5, 30), p = R(2, 5), k = R(2, 5);
+      return finish(sum([M2(a, 0, v), sub(kmul(k, lin(p, nz(-9, 9), v, true)))]), [kmul(R(2, 4), lin(1, nz(-6, 6), v))], v, 2); },
+    () => { const v = pick(VARS); const t = R(0, 1);
+      if (t === 0) { const k = R(2, 7), p = R(2, 5), q = R(2, 6), m = R(2, 5), r = R(1, 4);
+        return finish(sum([kmul(k, lin(p, nz(-9, 9), v)), sub(br(lin(q, nz(-9, 9), v)))]), [kmul(-m, lin(r, nz(-9, 9), v))], v, 3); }
+      // verschachtelt: a − [b − (p v − c)] = k (v + d) + e
+      const a = R(2, 20), b = R(2, 20), p = R(2, 6), c = nz(-9, 9), k = R(2, 5), d = nz(-6, 6);
+      const inner = lin(p, -c, v); // p v − c
+      const mid = { s: '[' + b + ' ' + M + ' (' + inner.s + ')]', P: padd([b], pscale(inner.P, -1)) };
+      const lhs = { s: a + ' ' + M + ' ' + mid.s, P: padd([a], pscale(mid.P, -1)) };
+      return finish(lhs, [kmul(k, lin(1, d, v))], v, 3); },
+  ],
+  zwei: [
+    () => { const v = pick(VARS); const a = nz(-9, 9), b = nz(-9, 9); if (a + b === 0) return null;
+      return finish(prod(lin(1, a, v), lin(1, b, v)), [M2(1, 2, v)], v, 1); },
+    () => { const v = pick(VARS); const t = R(0, 1);
+      if (t === 0) { const a = nz(-9, 9), b = nz(-9, 9), c = nz(-9, 9), d = nz(-9, 9); if (a + b === c + d) return null;
+        return finish(prod(lin(1, a, v), lin(1, b, v)), [prod(lin(1, c, v), lin(1, d, v))], v, 2); }
+      const p = R(2, 5), a = nz(-9, 9), b = nz(-9, 9); if (a + p * b === 0) return null;
+      return finish(prod(lin(p, a, v), lin(1, b, v)), [M2(p, 2, v)], v, 2); },
+    () => { const v = pick(VARS);
+      const pairs = [[2, 3, 1, 6], [2, 6, 3, 4], [2, 2, 1, 4], [3, 4, 2, 6], [2, 5, 1, 10], [3, 3, 1, 9]];
+      const [p, q, r, s] = pick(pairs); const sw = R(0, 1);
+      const A = lin(p, nz(-9, 9), v), B = lin(q, nz(-9, 9), v), C = lin(sw ? r : s, nz(-9, 9), v), D = lin(sw ? s : r, nz(-9, 9), v);
+      if (R(0, 1)) return finish(sum([prod(A, B), sub(prod(C, D))]), [], v, 3);
+      return finish(prod(A, B), [prod(C, D)], v, 3); },
+  ],
+  binom: [
+    () => { const v = pick(VARS); const a = nz(-9, 9); return finish(sqr(lin(1, a, v)), [M2(1, 2, v)], v, 1); },
+    () => { const v = pick(VARS); const t = R(0, 1);
+      if (t === 0) { const a = R(1, 9), b = R(1, 9); if (a === b) return null; return finish(sum([sqr(lin(1, a, v)), sub(sqr(lin(1, -b, v)))]), [], v, 2); }
+      const a = R(1, 9), b = R(1, 9); return finish(prod(lin(1, a, v), lin(1, -a, v)), [sqr(lin(1, -b, v))], v, 2); },
+    () => { const v = pick(VARS); const p = R(2, 5); const t = R(0, 1);
+      if (t === 0) { const a = R(1, 9), b = R(1, 9); return finish(sum([sqr(lin(p, -a, v)), sub(prod(lin(p, b, v), lin(p, -b, v)))]), [], v, 3); }
+      const a = nz(-9, 9), b = nz(-9, 9); if (a === b) return null;
+      return finish(sqr(lin(p, a, v)), [sqr(lin(p, b, v)), M2(R(1, 5), 1, v)], v, 3); },
+  ],
+};
+
+// ===== Ausklammern =====
+const NAMES = ['a', 'b', 'c', 'm', 'n', 'p', 'q', 'r', 's', 'u', 'x', 'y', 'z'];
+const SUP = { 1: '', 2: '²', 3: '³', 4: '⁴', 5: '⁵' };
+// Monom: {c, e:{var:exp}}
+function monoStr(m, first) {
+  const vars = Object.keys(m.e).filter(k => m.e[k] > 0).sort();
+  const body = vars.map(k => k + SUP[m.e[k]]).join('');
+  const a = Math.abs(m.c);
+  const coef = (a === 1 && body) ? '' : '' + a;
+  const sign = m.c < 0 ? (first ? M : ' ' + M + ' ') : (first ? '' : ' + ');
+  return sign + coef + body;
+}
+const polyStr = ms => ms.map((m, i) => monoStr(m, i === 0)).join('');
+const mmul = (a, b) => { const e = { ...a.e }; for (const k in b.e) e[k] = (e[k] || 0) + b.e[k]; return { c: a.c * b.c, e }; };
+function factorTask(level) {
+  for (let tries = 0; tries < 200; tries++) {
+    let F, inner;
+    if (level === 1) {
+      const vs = [pick(NAMES)]; if (R(0, 1)) { let w; do w = pick(NAMES); while (w === vs[0]); vs.push(w); }
+      F = { c: R(2, 9), e: {} };
+      inner = vs.length === 1 ? [{ c: R(1, 9), e: { [vs[0]]: 1 } }, { c: nz(-9, 9), e: {} }] : [{ c: R(1, 9), e: { [vs[0]]: 1 } }, { c: nz(-9, 9), e: { [vs[1]]: 1 } }];
+    } else if (level === 2) {
+      const t = R(0, 1);
+      if (t === 0) { const v = pick(NAMES); F = { c: R(2, 9), e: { [v]: 1 } }; inner = [{ c: R(1, 9), e: { [v]: 1 } }, { c: nz(-9, 9), e: {} }]; }
+      else { const [v, w, u] = [...NAMES].sort(() => Math.random() - .5); F = { c: R(2, 8), e: { [v]: 1 } };
+        inner = [{ c: R(1, 7), e: { [w]: 1 } }, { c: nz(-7, 7), e: { [u]: 1 } }, { c: nz(-7, 7), e: {} }]; }
+    } else {
+      const t = R(0, 2);
+      if (t === 2) { // Summe ausklammern: k·(...) ± m·(...)
+        const [v, w] = [...NAMES].sort(() => Math.random() - .5);
+        const k = R(2, 9), m = nz(-9, 9), b = nz(-9, 9); const Kl = '(' + w + (b < 0 ? ' ' + M + ' ' + (-b) : ' + ' + b) + ')';
+        const term = v + ' · ' + Kl + (m < 0 ? ' ' + M + ' ' : ' + ') + Math.abs(m) + ' · ' + Kl;
+        const ans = '(' + v + (m < 0 ? ' ' + M + ' ' : ' + ') + Math.abs(m) + ') · ' + Kl;
+        return { text: term, answer: ans, eq: false, hint: 'Klammere die gemeinsame Klammer aus.' };
+      }
+      const [v, w] = [...NAMES].sort(() => Math.random() - .5);
+      F = { c: R(2, 9) * (t === 1 ? -1 : 1), e: { [v]: R(1, 2), [w]: R(1, 2) } };
+      inner = [{ c: R(1, 7), e: { [v]: R(0, 1), [w]: 0 } }, { c: nz(-7, 7), e: { [w]: 1 } }];
+      if (R(0, 1)) inner.push({ c: nz(-7, 7), e: {} });
+    }
+    // maximal? coeff gcd 1 und keine Variable in allen inneren Gliedern
+    const g = inner.reduce((a, m) => gcd(a, m.c), 0); if (g !== 1) continue;
+    const allVars = new Set(inner.flatMap(m => Object.keys(m.e).filter(k => m.e[k] > 0)));
+    if ([...allVars].some(k => inner.every(m => (m.e[k] || 0) > 0))) continue;
+    if (inner.some(m => m.c === 0)) continue;
+    // keine doppelten Monome (gleiche Exponenten)
+    const keys = inner.map(m => JSON.stringify(Object.keys(m.e).filter(k => m.e[k] > 0).sort().map(k => [k, m.e[k]])));
+    if (new Set(keys).size !== keys.length) continue;
+    const expanded = inner.map(m => mmul(F, m));
+    const Fs = monoStr(F, true);
+    const answer = (Fs === '' ? '' : Fs === M ? M : Fs + ' · ') + '(' + polyStr(inner) + ')';
+    return { text: polyStr(expanded), answer, eq: false, hint: F.c < 0 ? 'Klammere einen negativen Faktor aus.' : 'Klammere so viel wie möglich aus.' };
+  }
+}
+const TOPICS = {
+  aufloesen: { title: 'Klammer auflösen', eq: true },
+  ausklammern: { title: 'Ausklammern', eq: false },
+  zwei: { title: 'Produkt aus zwei Klammern', eq: true },
+  binom: { title: 'Binomische Formeln', eq: true },
+};
+function makeTask(topic, level) {
+  for (let i = 0; i < 200; i++) {
+    const t = topic === 'ausklammern' ? factorTask(level) : GEN[topic][level - 1]();
+    if (t) return t;
+  }
+  throw new Error('no task ' + topic + level);
+}
+// ===== Oberfläche =====
+const INFO = {
+  aufloesen: { fach: 'Fach 1', ex: '3 − 2 · (x − 5) = x + 1' },
+  ausklammern: { fach: 'Fach 2', ex: '12a + 18b = 6 · (…)' },
+  zwei: { fach: 'Fach 3', ex: '(x + 2) · (x − 3) = x² + 4' },
+  binom: { fach: 'Fach 4', ex: '(x + 3)² = x² + 15' },
+};
+const OPEN_BINOM = location.hash === '#binom';
+const LV = ['', 'Basis', 'Standard', 'Experte'];
+let topic = null, tasks = [], shown = {};
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+const fracHTML = f => f.den === 1 ? fracStr(f) : (f.num < 0 ? '−' : '') + `<span class="fr" aria-label="${Math.abs(f.num)} durch ${f.den}"><span>${Math.abs(f.num)}</span><span>${f.den}</span></span>`;
+const bars = n => `<span class="bars" aria-hidden="true">${[1, 2, 3].map(i => `<i class="${i <= n ? '' : 'off'}"></i>`).join('')}</span>`;
+function newTasks() { tasks = [1, 2, 3].map(L => makeTask(topic, L)); shown = {}; }
+function home() {
+  let h = '<h2>Welches Fach öffnest du?</h2><div class="lockers">';
+  for (const k of Object.keys(TOPICS)) {
+    const closed = k === 'binom' && !OPEN_BINOM;
+    h += `<button class="locker${closed ? ' closed' : ''}" data-t="${k}" ${closed ? 'aria-disabled="true"' : ''}>
+      <span class="fach">${INFO[k].fach}<span class="led" aria-hidden="true"></span></span>
+      <span class="name">${TOPICS[k].title}</span>
+      <span class="ex">${closed ? '🔒︎ kommt bald' : esc(INFO[k].ex)}</span></button>`;
+  }
+  return h + '</div><p class="foot">Die Balken zeigen das Niveau wie im Buch: ein Balken Basis, zwei Balken Standard, drei Balken Experte.</p>';
+}
+function view() {
+  const T = TOPICS[topic];
+  let h = `<div class="bar"><button class="btn" id="back">← Zur Fachauswahl</button><button class="btn main" id="new">Neue Aufgaben</button></div>
+    <h2>${INFO[topic].fach} · ${T.title}</h2><div class="how">`;
+  h += T.eq
+    ? `<p><strong>Löse jede Gleichung schrittweise mit Äquivalenzumformungen.</strong> Löse zuerst die Klammern auf und fasse zusammen. Schreibe jede Umformung hinter einen senkrechten Strich, zum Beispiel | − 3x oder | : 5.</p><p>Die richtige Lösung steht schon unter der Aufgabe. Vergleiche am Ende. Stimmt sie nicht, suche deinen Fehler Zeile für Zeile.</p>`
+    : `<p><strong>Klammere so viel wie möglich aus.</strong> Suche den größten gemeinsamen Faktor aus Zahl und Variablen.</p><p>Kontrolliere selbst: Multipliziere dein Ergebnis wieder aus. Danach kannst du die Lösung aufdecken.</p>`;
+  h += '</div><div class="tasks">';
+  tasks.forEach((t, i) => {
+    const L = i + 1;
+    h += `<article class="task"><div class="label"><span class="no">Aufgabe ${String.fromCharCode(97 + i)})</span>${bars(L)}<span class="lvl">${LV[L]}</span></div><div class="inner">`;
+    if (t.eq) {
+      h += `<p>Löse die Gleichung.</p><div class="math">${esc(t.text)}</div>
+        <div class="sol"><span class="tag">Kontrolle</span><div class="math">L = { ${fracHTML(t.sol)} }</div></div>`;
+    } else {
+      h += `<p>${t.hint}</p><div class="math">${esc(t.text)}</div>`;
+      h += shown[i] ? `<div class="sol"><span class="tag">Lösung</span><div class="math">${esc(t.text)} = ${esc(t.answer)}</div></div>`
+                    : `<div><button class="btn" data-show="${i}">Lösung aufdecken</button></div>`;
+    }
+    h += '</div></article>';
+  });
+  return h + '</div>';
+}
+function render(focusId) {
+  document.getElementById('app').innerHTML = topic ? view() : home();
+  if (focusId) document.getElementById(focusId)?.focus();
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.t) { if (b.getAttribute('aria-disabled')) return; topic = b.dataset.t; newTasks(); render('new'); scrollTo(0, 0); return; }
+  if (b.id === 'back') { topic = null; render(); scrollTo(0, 0); return; }
+  if (b.id === 'new') { newTasks(); render('new'); return; }
+  if (b.dataset.show) { shown[b.dataset.show] = true; render(); }
+});
+window.addEventListener('hashchange', () => location.reload());
+render();
+</script>
+</body>
+</html>
